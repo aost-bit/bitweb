@@ -9,7 +9,7 @@
       if (ListMetricsBase.prototype._singletonInstance) {
         return ListMetricsBase.prototype._singletonInstance;
       }
-      var self = OrWeb.MetricsBase.apply(this, arguments);
+      var self = BitWeb.MetricsBase.apply(this, arguments);
       ListMetricsBase.prototype._singletonInstance = self;
 
       self.params = $.extend(true, {
