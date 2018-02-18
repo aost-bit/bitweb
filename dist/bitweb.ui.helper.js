@@ -1,6 +1,198 @@
 (function (BitWeb) {
   "use strict";
 
+  BitWeb.UIMapper = (function () {
+    var className = "UIMapper";
+
+    function UIMapper() {
+      // singleton
+      if (UIMapper.prototype._singletonInstance) {
+        return UIMapper.prototype._singletonInstance;
+      }
+      var self = this;
+      UIMapper.prototype._singletonInstance = self;
+
+      var interfaces = ko.observableArray();
+
+      self.interfaces = ko.pureComputed(function () {
+        return interfaces();
+      }, self);
+
+      var interfacesMap = {};
+
+      self._get = function (name) {
+        if (!name || !bitlib.common.isString(name)) {
+          return [];
+        }
+
+        if (interfacesMap[name]) {
+          return interfacesMap[name]; // shallow copy
+        }
+
+        var results = [];
+        bitlib.array.each(interfaces, function (i, itf) {
+          results = results.concat(itf.getUIByName(name));
+        });
+
+        interfacesMap[name] = results;
+
+        return results;
+      };
+
+      self._add = function (itfs) {
+        itfs = itfs || [];
+        itfs = bitlib.common.isArray(itfs) ? itfs : [itfs];
+
+        itfs = bitlib.array.removeNullOrUndefined(itfs);
+
+        if (itfs.length === 0) {
+          return self;
+        }
+
+        var indicator = function (uivm) {
+          if (!uivm.name) {
+            return uivm;
+          }
+
+          if (!interfacesMap[uivm.name]) {
+            interfacesMap[uivm.name] = [];
+          }
+
+          interfacesMap[uivm.name].push(uivm);
+
+          return uivm;
+        };
+
+        bitlib.array.each(itfs, function (i, itf) {
+          itf.command(indicator);
+        });
+
+        interfaces.push.apply(interfaces, itfs);
+
+        return self;
+      };
+
+      var hiddenInterfaces = [];
+
+      self._applyHideAll = function () {
+        if (0 < hiddenInterfaces.length) {
+          return self;
+        }
+
+        var indicator = function (uivm) {
+          if (!uivm.isVisible()) {
+            return uivm;
+          }
+
+          uivm.hide();
+          hiddenInterfaces.push(uivm);
+
+          return uivm;
+        };
+
+        bitlib.array.each(interfaces, function (i, itf) {
+          itf.command(indicator);
+        });
+
+        return self;
+      };
+
+      self._applyShowAll = function () {
+        if (hiddenInterfaces.length === 0) {
+          return self;
+        }
+
+        bitlib.array.each(hiddenInterfaces, function (i, itf) {
+          itf.show();
+        });
+
+        hiddenInterfaces = [];
+
+        return self;
+      };
+
+      self._applyShowAllAsynchronously = function (interval) {
+        var defer = $.Deferred();
+
+        if (hiddenInterfaces.length === 0) {
+          return defer.resolve().promise();
+        }
+
+        if (!bitlib.common.isNumber(interval) || interval < 100) {
+          interval = 100;
+        }
+
+        var promise = bitlib.array.eachTimeout(hiddenInterfaces, function (i, itf) {
+          itf.show();
+        }, interval);
+
+        promise
+          .done(function () {
+            hiddenInterfaces = [];
+
+            defer.resolve();
+          });
+
+        return defer.promise();
+      };
+
+      return self;
+    }
+
+    UIMapper.prototype.get = function (name) {
+      return this._get(name);
+    };
+
+    UIMapper.prototype.fget = function (name) {
+      return this._get(name)[0] || {};
+    };
+
+    UIMapper.prototype.add = function (uivm) {
+      this._add(uivm);
+      return this;
+    };
+
+    UIMapper.prototype.resetAll = function () {
+      var self = this;
+
+      bitlib.array.each(self.interfaces, function (i, itf) {
+        itf.reset();
+      });
+
+      return self;
+    };
+
+    UIMapper.prototype.clearAll = function () {
+      var self = this;
+
+      bitlib.array.each(self.interfaces, function (i, itf) {
+        itf.clear();
+      });
+
+      return self;
+    };
+
+    UIMapper.prototype.hideAll = function () {
+      this._applyHideAll();
+      return this;
+    };
+
+    UIMapper.prototype.showAll = function () {
+      this._applyShowAll();
+      return this;
+    };
+
+    UIMapper.prototype.showAllAsynchronously = function (interval) {
+      return this._applyShowAllAsynchronously(interval);
+    };
+
+    UIMapper.getClassName = function () {
+      return className;
+    };
+
+    return UIMapper;
+  }());
+
   BitWeb.UIValidator = (function () {
     var className = "UIValidator";
 
@@ -8,6 +200,7 @@
       if (!(this instanceof UIValidator)) {
         return new UIValidator();
       }
+
       // singleton
       if (UIValidator.prototype._singletonInstance) {
         return UIValidator.prototype._singletonInstance;
@@ -94,6 +287,7 @@
       if (!(this instanceof UIDisplayer)) {
         return new UIDisplayer();
       }
+
       // singleton
       if (UIDisplayer.prototype._singletonInstance) {
         var instance = UIDisplayer.prototype._singletonInstance;
@@ -105,39 +299,21 @@
       var self = this;
       UIDisplayer.prototype._singletonInstance = self;
 
-      var rootViewModels = [];
-
-      self._setRootViewModels = function (viewModels) {
-        viewModels = viewModels || [];
-        viewModels = bitlib.common.isArray(viewModels) ? viewModels : [viewModels];
-
-        if (viewModels.length === 0) {
-          return self;
-        }
-
-        rootViewModels = viewModels;
-
-        return self;
-      };
+      var mapper = new BitWeb.UIMapper();
 
       var sources = [];
+
 
       self._getAllSources = function () {
         return bitlib.common.copyDeep(sources);
       };
 
       self._setSources = function (sourceId) {
-        if (!sourceId || rootViewModels.length === 0) {
+        if (!sourceId || !bitlib.common.isString(sourceId)) {
           return self;
         }
 
-        sources = [];
-
-        for (var i = 0, len = rootViewModels.length; i < len; i++) {
-          if (!!rootViewModels[i].getUIByName) {
-            sources = sources.concat(rootViewModels[i].getUIByName(sourceId));
-          }
-        }
+        sources = mapper.get(sourceId);
 
         return self;
       };
@@ -154,17 +330,11 @@
       };
 
       self._setDestinations = function (destinationId) {
-        if (!destinationId || rootViewModels.length === 0) {
+        if (!destinationId || !bitlib.common.isString(destinationId)) {
           return self;
         }
 
-        destinations = [];
-
-        for (var i = 0, len = rootViewModels.length; i < len; i++) {
-          if (!!rootViewModels[i].getUIByName) {
-            destinations = destinations.concat(rootViewModels[i].getUIByName(destinationId));
-          }
-        }
+        destinations = mapper.get(destinationId);
 
         return self;
       };
@@ -259,6 +429,7 @@
       if (!(this instanceof UIValueCopier)) {
         return new UIValueCopier();
       }
+
       // singleton
       if (UIValueCopier.prototype._singletonInstance) {
         var instance = UIValueCopier.prototype._singletonInstance;
@@ -270,20 +441,7 @@
       var self = this;
       UIValueCopier.prototype._singletonInstance = self;
 
-      var rootViewModels = [];
-
-      self._setRootViewModels = function (viewModels) {
-        viewModels = viewModels || [];
-        viewModels = bitlib.common.isArray(viewModels) ? viewModels : [viewModels];
-
-        if (viewModels.length === 0) {
-          return self;
-        }
-
-        rootViewModels = viewModels;
-
-        return self;
-      };
+      var mapper = new BitWeb.UIMapper();
 
       var sources = [];
 
@@ -292,17 +450,11 @@
       };
 
       self._setSources = function (sourceId) {
-        if (!sourceId || rootViewModels.length === 0) {
+        if (!sourceId || !bitlib.common.isString(sourceId)) {
           return self;
         }
 
-        sources = [];
-
-        for (var i = 0, len = rootViewModels.length; i < len; i++) {
-          if (!!rootViewModels[i].getUIByName) {
-            sources = sources.concat(rootViewModels[i].getUIByName(sourceId));
-          }
-        }
+        sources = mapper.get(sourceId);
 
         return self;
       };
@@ -319,17 +471,11 @@
       };
 
       self._setDestinations = function (destinationId) {
-        if (!destinationId || rootViewModels.length === 0) {
+        if (!destinationId || !bitlib.common.isString(destinationId)) {
           return self;
         }
 
-        destinations = [];
-
-        for (var i = 0, len = rootViewModels.length; i < len; i++) {
-          if (!!rootViewModels[i].getUIByName) {
-            destinations = destinations.concat(rootViewModels[i].getUIByName(destinationId));
-          }
-        }
+        destinations = mapper.get(destinationId);
 
         return self;
       };
@@ -346,7 +492,7 @@
       };
 
       self._setDelimiter = function (newDelimiter) {
-        if (!newDelimiter || !bitlib.common.isString(newDelimiter)) {
+        if (!bitlib.common.isString(newDelimiter)) {
           return self;
         }
 
@@ -778,6 +924,7 @@
       if (!(this instanceof UIValueReflector)) {
         return new UIValueReflector();
       }
+
       // singleton
       if (UIValueReflector.prototype._singletonInstance) {
         return UIValueReflector.prototype._singletonInstance;
@@ -785,20 +932,7 @@
       var self = this;
       UIValueReflector.prototype._singletonInstance = self;
 
-      var rootViewModels = [];
-
-      self._setRootViewModels = function (viewModels) {
-        viewModels = viewModels || [];
-        viewModels = bitlib.common.isArray(viewModels) ? viewModels : [viewModels];
-
-        if (viewModels.length === 0) {
-          return self;
-        }
-
-        rootViewModels = viewModels;
-
-        return self;
-      };
+      var mapper = new BitWeb.UIMapper();
 
       var sources = [];
 
@@ -807,17 +941,11 @@
       };
 
       self._setSources = function (sourceId) {
-        if (!sourceId || rootViewModels.length === 0) {
+        if (!sourceId || !bitlib.common.isString(sourceId)) {
           return self;
         }
 
-        sources = [];
-
-        for (var i = 0, len = rootViewModels.length; i < len; i++) {
-          if (!!rootViewModels[i].getUIByName) {
-            sources = sources.concat(rootViewModels[i].getUIByName(sourceId));
-          }
-        }
+        sources = mapper.get(sourceId);
 
         return self;
       };
@@ -834,17 +962,11 @@
       };
 
       self._setDestinations = function (destinationId) {
-        if (!destinationId || rootViewModels.length === 0) {
+        if (!destinationId || !bitlib.common.isString(destinationId)) {
           return self;
         }
 
-        destinations = [];
-
-        for (var i = 0, len = rootViewModels.length; i < len; i++) {
-          if (!!rootViewModels[i].getUIByName) {
-            destinations = destinations.concat(rootViewModels[i].getUIByName(destinationId));
-          }
-        }
+        destinations = mapper.get(destinationId);
 
         return self;
       };
@@ -933,6 +1055,7 @@
       if (!(this instanceof UIValueTransmitter)) {
         return new UIValueTransmitter();
       }
+
       // singleton
       if (UIValueTransmitter.prototype._singletonInstance) {
         return UIValueTransmitter.prototype._singletonInstance;
@@ -940,20 +1063,7 @@
       var self = this;
       UIValueTransmitter.prototype._singletonInstance = self;
 
-      var rootViewModels = [];
-
-      self._setRootViewModels = function (viewModels) {
-        viewModels = viewModels || [];
-        viewModels = bitlib.common.isArray(viewModels) ? viewModels : [viewModels];
-
-        if (viewModels.length === 0) {
-          return self;
-        }
-
-        rootViewModels = viewModels;
-
-        return self;
-      };
+      var mapper = new BitWeb.UIMapper();
 
       var sources = [];
 
@@ -962,17 +1072,11 @@
       };
 
       self._setSources = function (sourceId) {
-        if (!sourceId || rootViewModels.length === 0) {
+        if (!sourceId || !bitlib.common.isString(sourceId)) {
           return self;
         }
 
-        sources = [];
-
-        for (var i = 0, len = rootViewModels.length; i < len; i++) {
-          if (!!rootViewModels[i].getUIByName) {
-            sources = sources.concat(rootViewModels[i].getUIByName(sourceId));
-          }
-        }
+        sources = mapper.get(sourceId);
 
         return self;
       };
@@ -989,17 +1093,11 @@
       };
 
       self._setDestinations = function (destinationId) {
-        if (!destinationId || rootViewModels.length === 0) {
+        if (!destinationId || !bitlib.common.isString(destinationId)) {
           return self;
         }
 
-        destinations = [];
-
-        for (var i = 0, len = rootViewModels.length; i < len; i++) {
-          if (!!rootViewModels[i].getUIByName) {
-            destinations = destinations.concat(rootViewModels[i].getUIByName(destinationId));
-          }
-        }
+        destinations = mapper.get(destinationId);
 
         return self;
       };
@@ -1079,6 +1177,84 @@
     };
 
     return UIValueTransmitter;
+  }());
+
+  BitWeb.SelectUIOptionsFactory = (function () {
+    var className = "SelectUIOptionsFactory";
+
+    function SelectUIOptionsFactory() {
+      var self = this;
+
+      var options = ko.observableArray();
+
+      self._returnOptions = function () {
+        return options;
+      };
+
+      self._replaceOptions = function (newOptions) {
+        if (bitlib.common.isObservableArray(newOptions)) {
+          options = newOptions;
+        }
+        return self;
+      };
+
+      self._addOption = function (newOpts) {
+        newOpts = newOpts || [];
+        newOpts = bitlib.common.isArray(newOpts) ? newOpts : [newOpts];
+
+        var opts = [];
+        for (var i = 0, len = newOpts.length; i < len; i++) {
+          if (bitlib.common.isObject(newOpts[i]) && !!newOpts[i].isSelectUIOptionViewModel) {
+            opts.push(newOpts[i]);
+          }
+        }
+
+        if (0 < opts.length) {
+          options.push.apply(options, opts);
+        }
+
+        return self;
+      };
+
+      self._clearOptions = function () {
+        options.removeAll();
+        return self;
+      };
+
+      return self;
+    }
+
+    SelectUIOptionsFactory.prototype.to = function (options) {
+      this._replaceOptions(options);
+      return this;
+    };
+
+    SelectUIOptionsFactory.prototype.publish = function (masterRep, buildOptionsFunc) {
+      var self = this;
+
+      if (!masterRep || !bitlib.common.isFunction(buildOptionsFunc)) {
+        return self._returnOptions();
+      }
+
+      var promise = masterRep.load();
+      promise
+        .done(function () {
+          var options = buildOptionsFunc(masterRep);
+          if (bitlib.common.isArray(options)) {
+            self
+              ._clearOptions()
+              ._addOption(options);
+          }
+        });
+
+      return self._returnOptions();
+    };
+
+    SelectUIOptionsFactory.getClassName = function () {
+      return className;
+    };
+
+    return SelectUIOptionsFactory;
   }());
 
 }(BitWeb || {}));

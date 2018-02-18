@@ -33,7 +33,7 @@
         return self;
       };
 
-      self._clearProxies = function () {
+      self._clearProxy = function () {
         serviceProxy = {};
         return self;
       };
@@ -47,7 +47,7 @@
     };
 
     RequestDispatcher.prototype.clear = function () {
-      this._clearProxies();
+      this._clearProxy();
       return this;
     };
 
@@ -56,7 +56,7 @@
         defer = $.Deferred();
 
       var proxy = self._getProxy();
-      if (!proxy.service) {
+      if (bitlib.common.isNullOrUndefined(proxy.service)) {
         return defer.resolve().promise();
       }
 
@@ -66,39 +66,12 @@
 
       disconnectHandler = disconnectHandler || function () {
         bitlib.logger.warn("ネットワークアクセスに失敗しました. 接続をご確認ください.");
-        return $.Deferred().resolve().promise();
+        return defer.resolve().promise();
       };
 
       var promise = null;
 
-      if (bitlib.browser.isOnline()) {
-        promise = bitlib.ajax.send(url, {
-          request: proxy.message
-        });
-
-        if (promise) {
-          promise
-            .done(function (data) {
-              var replyHandler = proxy.service.publishReplyHandler(proxy.message);
-              replyHandler(data);
-
-              if (options.cacheResult) {
-                var cacheHandler = proxy.service.publishCacheHandler(proxy.message);
-                cacheHandler(data);
-              }
-
-              defer.resolve();
-            })
-            .fail(function (XMLHttpRequest, textStatus, errorThrown) {
-              var errorHandler = proxy.service.publishErrorHandler(proxy.message);
-              errorHandler(XMLHttpRequest, textStatus, errorThrown);
-
-              defer.reject();
-            });
-        } else {
-          defer.reject();
-        }
-      } else {
+      if (!bitlib.browser.isOnline()) {
         promise = disconnectHandler();
 
         if (promise) {
@@ -112,7 +85,36 @@
         } else {
           defer.resolve();
         }
+
+        return defer.promise();
       }
+
+      promise = bitlib.ajax.send(url, {
+        request: proxy.message
+      });
+
+      if (!promise) {
+        return defer.reject().promise();
+      }
+
+      promise
+        .done(function (data) {
+          var replyHandler = proxy.service.publishReplyHandler(proxy.message);
+          replyHandler(data);
+
+          if (options.cacheResult) {
+            var cacheHandler = proxy.service.publishCacheHandler(proxy.message);
+            cacheHandler(data);
+          }
+
+          defer.resolve();
+        })
+        .fail(function (XMLHttpRequest, textStatus, errorThrown) {
+          var errorHandler = proxy.service.publishErrorHandler(proxy.message);
+          errorHandler(XMLHttpRequest, textStatus, errorThrown);
+
+          defer.reject();
+        });
 
       return defer.promise();
     };
@@ -125,7 +127,7 @@
         defer = $.Deferred();
 
       var proxy = self._getProxy();
-      if (!proxy.service) {
+      if (bitlib.common.isNullOrUndefined(proxy.service)) {
         return defer.resolve().promise();
       }
 
@@ -142,9 +144,7 @@
         request: proxy.message
       });
 
-      defer.resolve();
-
-      return defer.promise();
+      return defer.resolve().promise();
     };
 
     RequestDispatcher.getClassName = function () {
@@ -152,9 +152,12 @@
     };
 
     RequestDispatcher.setUrl = function (newUrl) {
-      if (bitlib.common.isString(newUrl)) {
-        url = newUrl;
+      if (!newUrl && !bitlib.common.isString(newUrl)) {
+        return false;
       }
+
+      url = newUrl;
+
       return true;
     };
 
@@ -296,7 +299,7 @@
 
       var promises = [];
       for (var i = 0, len = proxies.length; i < len; i++) {
-        if (!proxies[i].options.offline) {
+        if (!bitlib.common.toBoolean(proxies[i].options.offline)) {
           promises.push(proxies[i].dispatcher.sendOnline(proxies[i].options, proxies[i].disconnectHandler));
         } else {
           promises.push(proxies[i].dispatcher.sendOffline(proxies[i].options));

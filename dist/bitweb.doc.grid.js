@@ -81,21 +81,21 @@
         return results;
       }, self);
 
-      self._addTable = function (newTables) {
-        newTables = newTables || [];
-        newTables = bitlib.common.isArray(newTables) ? newTables : [newTables];
+      self._addTable = function (newTbls) {
+        newTbls = newTbls || [];
+        newTbls = bitlib.common.isArray(newTbls) ? newTbls : [newTbls];
 
-        var gridTables = [];
-        for (var i = 0, len = newTables.length; i < len; i++) {
-          if (!newTables[i] || !newTables[i].isGridTableViewModel) {
+        var tbls = [];
+        for (var i = 0, len = newTbls.length; i < len; i++) {
+          if (!bitlib.common.isObject(newTbls[i]) || !newTbls[i].isGridTableViewModel) {
             continue;
           }
 
-          gridTables.push(newTables[i]);
+          tbls.push(newTbls[i]);
         }
 
-        if (0 < gridTables.length) {
-          tables.push.apply(tables, gridTables);
+        if (0 < tbls.length) {
+          tables.push.apply(tables, tbls);
         }
 
         return self;
@@ -112,6 +112,16 @@
 
     var _super = BitWeb.DocumentBase;
     inherits(GridDocumentBase, _super);
+
+    GridDocumentBase.prototype.addTable = function (tbl) {
+      this._addTable(tbl);
+      return this;
+    };
+
+    GridDocumentBase.prototype.clearTables = function () {
+      this._clearTables();
+      return this;
+    };
 
     GridDocumentBase.getClassName = function () {
       return className;
@@ -178,17 +188,17 @@
         newRows = newRows || [];
         newRows = bitlib.common.isArray(newRows) ? newRows : [newRows];
 
-        var gridRows = [];
+        var rowArr = [];
         for (var i = 0, len = newRows.length; i < len; i++) {
-          if (!newRows[i] || !newRows[i].isGridRowViewModel) {
+          if (!bitlib.common.isObject(newRows[i]) || !newRows[i].isGridRowViewModel) {
             continue;
           }
 
-          gridRows.push(newRows[i]);
+          rowArr.push(newRows[i]);
         }
 
-        if (0 < gridRows.length) {
-          rows.push.apply(rows, gridRows);
+        if (0 < rowArr.length) {
+          rows.push.apply(rows, rowArr);
         }
 
         return self;
@@ -249,17 +259,17 @@
         newCols = newCols || [];
         newCols = bitlib.common.isArray(newCols) ? newCols : [newCols];
 
-        var gridCols = [];
+        var colArr = [];
         for (var i = 0, len = newCols.length; i < len; i++) {
-          if (!newCols[i] || !newCols[i].isGridColumnViewModel) {
+          if (!bitlib.common.isObject(newCols[i]) || !newCols[i].isGridColumnViewModel) {
             continue;
           }
 
-          gridCols.push(newCols[i]);
+          colArr.push(newCols[i]);
         }
 
-        if (0 < gridCols.length) {
-          columns.push.apply(columns, gridCols);
+        if (0 < colArr.length) {
+          columns.push.apply(columns, colArr);
         }
 
         return self;
@@ -306,6 +316,26 @@
     var _super = BitWeb.ResourceBase;
     inherits(GridTableBase, _super);
 
+    GridTableBase.prototype.addRow = function (row) {
+      this._addRow(row);
+      return this;
+    };
+
+    GridTableBase.prototype.clearRows = function () {
+      this._clearRows();
+      return this;
+    };
+
+    GridTableBase.prototype.addColumn = function (col) {
+      this._addColumn(col);
+      return this;
+    };
+
+    GridTableBase.prototype.clearColumns = function () {
+      this._clearColumns();
+      return this;
+    };
+
     GridTableBase.prototype.convoluteRows = function (col) {
       if (!col || !col.isGridColumnViewModel) {
         return [];
@@ -345,9 +375,9 @@
     function GridRowBase(id, params) {
       var self = BitWeb.ResourceBase.apply(this, [params]);
 
-      self.id = id || "";
-
       self.isGridRowViewModel = true;
+
+      self.id = id || bitlib.common.publishTemporaryUniqueName();
 
       self.type = className;
 
@@ -375,9 +405,9 @@
     function GridColumnBase(id, params) {
       var self = BitWeb.ResourceBase.apply(this, [params]);
 
-      self.id = id || "";
-
       self.isGridColumnViewModel = true;
+
+      self.id = id || bitlib.common.publishTemporaryUniqueName();
 
       self.type = className;
 
@@ -505,6 +535,11 @@
       }));
 
       return self;
+    };
+
+    GridCellMapperBase.prototype.clear = function () {
+      this._clear();
+      return this;
     };
 
     GridCellMapperBase.getClassName = function () {

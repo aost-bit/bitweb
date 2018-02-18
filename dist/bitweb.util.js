@@ -34,6 +34,7 @@
       self._setTimeLag = function (val) {
         if (!bitlib.common.isNumber(val)) {
           val = bitlib.common.toNumber(val);
+
           if (isNaN(val)) {
             val = 0;
           }
@@ -92,6 +93,126 @@
     return DateTimeCorrector;
   }());
 
+  BitWeb.UserClock = (function () {
+    var className = "UserClock";
+
+    var MIN_INTERVAL = 60 * 1000;
+
+    var dateTimeCorrector = new BitWeb.DateTimeCorrector();
+
+    function UserClock() {
+      if (!(this instanceof UserClock)) {
+        return new UserClock();
+      }
+
+      // singleton
+      if (UserClock.prototype._singletonInstance) {
+        return UserClock.prototype._singletonInstance;
+      }
+      var self = this;
+      UserClock.prototype._singletonInstance = self;
+
+      var now = ko.observable(dateTimeCorrector.getNow());
+
+      self.now = ko.pureComputed(function () {
+        return now();
+      }, self);
+
+      var interval = 1800 * 1000; // millisec
+
+      self._getInterval = function () {
+        return interval;
+      };
+
+      self._setInterval = function (newInterval) {
+        if (bitlib.common.isNumber(newInterval)) {
+          if (newInterval < MIN_INTERVAL) {
+            newInterval = MIN_INTERVAL;
+          }
+          interval = newInterval;
+        }
+        return self;
+      };
+
+      var isRunning = ko.observable(false);
+
+      self.isRunning = ko.pureComputed(function () {
+        return isRunning();
+      }, self);
+
+      var tick = null,
+        tack = null;
+
+      var autoUpdate = function () {
+        now(dateTimeCorrector.getNow());
+
+        tick = setTimeout(autoUpdate, 1000);
+      };
+
+      var autoCorrect = function () {
+        dateTimeCorrector.updateTimeLag();
+
+        tack = setTimeout(autoCorrect, self._getInterval());
+      };
+
+      self._start = function () {
+        if (isRunning()) {
+          return self;
+        }
+
+        isRunning(true);
+
+        autoUpdate();
+        tack = setTimeout(autoCorrect, self._getInterval());
+
+        return self;
+      };
+
+      self._stop = function () {
+        if (!isRunning()) {
+          return self;
+        }
+
+        if (tick) {
+          clearTimeout(tick);
+          tick = null;
+        }
+
+        if (tack) {
+          clearTimeout(tack);
+          tack = null;
+        }
+
+        isRunning(false);
+
+        return self;
+      };
+
+      return self;
+    }
+
+    UserClock.prototype.setCorrectInterval = function (interval) {
+      this._setInterval(interval);
+      return this;
+    };
+
+    UserClock.prototype.start = function () {
+      this._start();
+      return this;
+    };
+
+    UserClock.prototype.stop = function () {
+      this._stop();
+      return this;
+    };
+
+    UserClock.getClassName = function () {
+      return className;
+    };
+
+    return UserClock;
+  }());
+
   BitWeb.LogCollector = (function () {
     var className = "LogCollector";
 
@@ -109,26 +230,6 @@
       var self = this;
       LogCollector.prototype._singletonInstance = self;
 
-      var isRunning = ko.observable(false);
-
-      self.isRunning = ko.pureComputed(function () {
-        return isRunning();
-      }, self);
-
-      self._start = function () {
-        if (!isRunning()) {
-          isRunning(true);
-        }
-        return self;
-      };
-
-      self._stop = function () {
-        if (isRunning()) {
-          isRunning(false);
-        }
-        return self;
-      };
-
       var interval = 60 * 1000; // millisec
 
       self._getInterval = function () {
@@ -145,31 +246,58 @@
         return self;
       };
 
+      var isRunning = ko.observable(false);
+
+      self.isRunning = ko.pureComputed(function () {
+        return isRunning();
+      }, self);
+
       var tick = null;
 
-      function autoCollect() {
+      var autoCollect = function () {
         self.sendLogs();
 
         if (isRunning()) {
-          tick = setTimeout(autoCollect, interval);
+          tick = setTimeout(autoCollect, self._getInterval());
         }
 
         return self;
       }
 
-      isRunning.subscribe(function (running) {
-        if (running) {
-          tick = setTimeout(autoCollect, interval);
-        } else {
-          if (tick) {
-            clearTimeout(tick);
-            tick = null;
-          }
+      self._start = function () {
+        if (isRunning()) {
+          return self;
         }
-      });
+
+        isRunning(true);
+
+        tick = setTimeout(autoCollect, self._getInterval());
+
+        return self;
+      };
+
+      self._stop = function () {
+        if (!isRunning()) {
+          return self;
+        }
+
+        if (tick) {
+          clearTimeout(tick);
+          tick = null;
+        }
+
+        isRunning(false);
+
+        return self;
+      };
 
       return self;
     }
+
+    LogCollector.prototype.setInterval = function (interval) {
+      this._setInterval(interval);
+      return this;
+    };
 
     LogCollector.prototype.sendLogs = function () {
       var message = "LogCollector のログ送信処理はオーバーライドして使用してください.\n" +
@@ -200,6 +328,8 @@
   BitWeb.UrlDispatcher = (function () {
     var className = "UrlDispatcher";
 
+    var logCollector = new BitWeb.LogCollector();
+
     var windowOptions = {
       // left: 0,            // 左端からの距離をピクセル単位で指定
       // top: 0,             // 上端からの距離をピクセル単位で指定
@@ -215,7 +345,7 @@
     };
 
     function concatQueries(url, queryParams) {
-      if (!url) {
+      if (!url || !bitlib.common.isString(url)) {
         return "";
       }
 
@@ -233,7 +363,7 @@
         return url;
       }
 
-      var fullUrl = bitlib.string.rtrim(url, ["\\s", "\\t", "?"]);
+      var fullUrl = bitlib.string.rtrim(url, ["\\s", "\\t", "\\?"]);
 
       if (bitlib.string.contains(fullUrl, "?")) {
         fullUrl += ("&" + queryString);
@@ -508,11 +638,11 @@
     };
 
     UrlDispatcher.prototype.jump = function (url) {
-      BitWeb.LogCollector.sendout();
+      logCollector.sendLogs();
 
       var self = this;
 
-      if (!url) {
+      if (!url || !bitlib.common.isString(url)) {
         return self;
       }
 
@@ -545,9 +675,9 @@
     };
 
     UrlDispatcher.prototype.open = function (url, options) {
-      BitWeb.LogCollector.sendout();
+      logCollector.sendLogs();
 
-      if (!url) {
+      if (!url || !bitlib.common.isString(url)) {
         return "";
       }
 
@@ -578,7 +708,7 @@
 
       var fullUrl = concatQueries(url, self._cloneQueries());
       if (fullUrl) {
-        var windowObj = window.open(fullUrl, windowName, bitlib.string.toPropertyText(options));
+        var windowObj = window.open(fullUrl, windowName, bitlib.string.toPropertyText(options, ",", ""));
         self._registWindowObject(windowName, windowObj);
       }
 
@@ -635,6 +765,10 @@
       return className;
     };
 
+    UrlDispatcher.concatQueries = function (url, queryParams) {
+      return concatQueries(url, queryParams);
+    };
+
     return UrlDispatcher;
   }());
 
@@ -642,10 +776,6 @@
     var className = "SessionKeeper";
 
     var MIN_INTERVAL = 60 * 1000;
-
-    function dispatchRequest() {
-
-    }
 
     function SessionKeeper() {
       if (!(this instanceof SessionKeeper)) {
@@ -658,26 +788,6 @@
       }
       var self = this;
       SessionKeeper.prototype._singletonInstance = self;
-
-      var isRunning = ko.observable(false);
-
-      self.isRunning = ko.pureComputed(function () {
-        return isRunning();
-      }, self);
-
-      self._start = function () {
-        if (!isRunning()) {
-          isRunning(true);
-        }
-        return self;
-      };
-
-      self._stop = function () {
-        if (isRunning()) {
-          isRunning(false);
-        }
-        return self;
-      };
 
       var interval = 5 * 60 * 1000; // millisec
 
@@ -695,31 +805,67 @@
         return self;
       };
 
+      var isRunning = ko.observable(false);
+
+      self.isRunning = ko.pureComputed(function () {
+        return isRunning();
+      }, self);
+
       var tick = null;
 
-      function keepSession() {
-        dispatchRequest();
+      var autoKeep = function () {
+        self.keepSession();
 
         if (isRunning()) {
-          tick = setTimeout(keepSession, interval);
+          tick = setTimeout(autoKeep, self._getInterval());
         }
 
         return self;
       }
 
-      isRunning.subscribe(function (running) {
-        if (running) {
-          tick = setTimeout(autoCollect, interval);
-        } else {
-          if (tick) {
-            clearTimeout(tick);
-            tick = null;
-          }
+      self._start = function () {
+        if (isRunning()) {
+          return self;
         }
-      });
+
+        isRunning(true);
+
+        tick = setTimeout(autoKeep, self._getInterval());
+
+        return self;
+      };
+
+      self._stop = function () {
+        if (!isRunning()) {
+          return self;
+        }
+
+        if (tick) {
+          clearTimeout(tick);
+          tick = null;
+        }
+
+        isRunning(false);
+
+        return self;
+      };
 
       return self;
     }
+
+    SessionKeeper.prototype.keepSession = function () {
+      var message = "SessionKeeper のリクエスト送信処理はオーバーライドして使用してください.\n" +
+        "Promise オブジェクトを返すと、送信処理を非同期に処理することが可能です.";
+
+      bitlib.logger.info(message);
+
+      return $.Deferred().resolve().promise();
+    };
+
+    SessionKeeper.prototype.setInterval = function (interval) {
+      this._setInterval(interval);
+      return this;
+    };
 
     SessionKeeper.prototype.start = function () {
       this._start();

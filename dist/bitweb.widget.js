@@ -76,7 +76,7 @@
 
       self.owner(owner);
 
-      if (closeHandler) {
+      if (bitlib.common.isFunction(closeHandler)) {
         self.callback = closeHandler;
       }
 
@@ -146,8 +146,8 @@
           $("#" + self.owner.id)
             .parent(".ui-dialog")
             .css({
-              left: x + "px",
-              top: y + "px"
+              left: (x + "px"),
+              top: (y + "px")
             });
         }
       };
@@ -216,12 +216,22 @@
         // callbacks
         open: null,
         close: null,
+        overflow: true,
         alignCenter: true
       }, (options || {}));
 
-      var dialogWidget = undefined;
+      if (bitlib.common.isNullOrUndefined(options.open) && bitlib.common.isNullOrUndefined(options.close) && !bitlib.common.toBoolean(options.overflow)) {
+        options.open = function () {
+          $("body").css("overflow", "hidden");
+        };
 
-      var dialogId = widgetName + "Dialog",
+        options.close = function () {
+          $("body").css("overflow", "visible");
+        };
+      }
+
+      var dialogWidget,
+        dialogId = widgetName.toLowerCase() + "-dialog",
         template = widgetName + "Template";
 
       $.widget("BitWeb." + widgetName, {
@@ -243,8 +253,8 @@
 
           if (createNew) {
             // jquery ui dialog 用の div 作成.
-            $('<div class="bit-dialog" id="' + dialogId + '" title="' + options.title + '" style="display: none;">' +
-              '<div class="bit-dialog-contents" data-bind="visible: isVisible">' +
+            $('<div class="bit-widget-dialog" id="' + dialogId + '" title="' + options.title + '" style="display: none;">' +
+              '<div class="bit-widget-dialog-contents" data-bind="visible: isVisible">' +
               '<!-- ko template: { name: "' + template + '" } --> <!-- /ko -->' +
               '</div>' +
               '</div>').appendTo("body");
@@ -366,7 +376,7 @@
 
       self.owner(owner);
 
-      if (closeHandler) {
+      if (bitlib.common.isFunction(closeHandler)) {
         self.callback = closeHandler;
       }
 
@@ -436,8 +446,8 @@
           $("#" + self.owner.id)
             .parent(".ui-dialog")
             .css({
-              left: x + "px",
-              top: y + "px"
+              left: (x + "px"),
+              top: (y + "px")
             });
         }
       };
@@ -503,12 +513,22 @@
         // callbacks
         open: null,
         close: null,
+        overflow: true,
         alignCenter: true
       }, (options || {}));
 
-      var viewboxWidget = undefined;
+      if (bitlib.common.isNullOrUndefined(options.open) && bitlib.common.isNullOrUndefined(options.close) && !bitlib.common.toBoolean(options.overflow)) {
+        options.open = function () {
+          $("body").css("overflow", "hidden");
+        };
 
-      var viewboxId = widgetName + "Viewbox",
+        options.close = function () {
+          $("body").css("overflow", "visible");
+        };
+      }
+
+      var viewboxWidget,
+        viewboxId = widgetName.toLowerCase() + "-viewbox",
         template = widgetName + "Template";
 
       $.widget("BitWeb." + widgetName, {
@@ -530,8 +550,8 @@
 
           if (createNew) {
             // jquery ui viewbox 用の div 作成.
-            $('<div class="bit-viewbox" id="' + viewboxId + '" title="' + options.title + '" style="display: none;">' +
-              '<div class="bit-viewbox-contents" data-bind="visible: isVisible">' +
+            $('<div class="bit-widget-viewbox" id="' + viewboxId + '" title="' + options.title + '" style="display: none;">' +
+              '<div class="bit-widget-viewbox-contents" data-bind="visible: isVisible">' +
               '<!-- ko template: { name: "' + template + '" } --> <!-- /ko -->' +
               '</div>' +
               '</div>').appendTo("body");
@@ -635,6 +655,10 @@
 
         self._visible();
 
+        if (!bitlib.common.toBoolean(self.options.overflow)) {
+          $("body").css("overflow", "hidden");
+        }
+
         return self;
       };
 
@@ -648,6 +672,10 @@
         }
 
         self._invisible();
+
+        if (!bitlib.common.toBoolean(self.options.overflow)) {
+          $("body").css("overflow", "visible");
+        }
 
         return self;
       };
@@ -665,7 +693,7 @@
 
       self.owner(owner);
 
-      if (closeHandler) {
+      if (bitlib.common.isFunction(closeHandler)) {
         self.callback = closeHandler;
       }
 
@@ -741,8 +769,8 @@
 
         $contents
           .css({
-            left: x + "px",
-            top: y + "px"
+            left: (x + "px"),
+            top: (y + "px")
           });
       };
 
@@ -789,12 +817,12 @@
       }
 
       options = $.extend({
-        title: ""
+        title: "",
+        overflow: true
       }, (options || {}));
 
-      var overlayWidget = undefined;
-
-      var overlayId = widgetName + "Overlay",
+      var overlayWidget,
+        overlayId = widgetName.toLowerCase() + "-overlay",
         template = widgetName + "Template";
 
       $.widget("BitWeb." + widgetName, {
@@ -816,12 +844,12 @@
 
           if (createNew) {
             // jquery ui overlay 用の div 作成.
-            $('<div class="bit-overlay" id="' + overlayId + '" title="' + options.title + '" data-bind="click: ok">' +
-              '<div class="bit-overlay-contents" data-bind="visible: isVisible">' +
+            $('<div class="bit-widget-overlay" id="' + overlayId + '" title="' + options.title + '" data-bind="click: ok">' +
+              '<div class="bit-widget-overlay-contents" data-bind="visible: isVisible">' +
               '<table data-bind="click: function () { return false; }, clickBubble: false">' +
               '<tbody>' +
               '<tr>' +
-              '<td class="bit-overlay-close">' +
+              '<td class="bit-widget-overlay-close">' +
               '<img src="/assets/icon/close.png" data-bind="click: close"/>' +
               '</td>' +
               '</tr>' +
@@ -1008,8 +1036,8 @@
 
         $popup
           .css({
-            left: x + "px",
-            top: y + "px"
+            left: (x + "px"),
+            top: (y + "px")
           });
       };
 
@@ -1055,9 +1083,8 @@
         title: ""
       }, (options || {}));
 
-      var popupWidget = undefined;
-
-      var popupId = widgetName + "Popup",
+      var popupWidget,
+        popupId = widgetName.toLowerCase() + "-popup",
         template = widgetName + "Template";
 
       $.widget("BitWeb." + widgetName, {
@@ -1079,8 +1106,8 @@
 
           if (createNew) {
             // jquery ui popup 用の div 作成.
-            $('<div class="bit-popup" id="' + popupId + '" title="' + options.title + '">' +
-              '<div class="bit-popup-contents" data-bind="visible: isVisible">' +
+            $('<div class="bit-widget-popup" id="' + popupId + '" title="' + options.title + '">' +
+              '<div class="bit-widget-popup-contents" data-bind="visible: isVisible">' +
               '<!-- ko template: { name: "' + template + '" } --> <!-- /ko -->' +
               '</div>' +
               '</div>').appendTo("body");

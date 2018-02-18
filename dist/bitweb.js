@@ -2,6 +2,6 @@
   "use strict";
 
   // for namespace 'BitWeb' defined.
-  globals.BitWeb = $.extend({}, (globals.bitWebExtensions || {}));
+  globals.BitWeb = $.extend({}, (globals.bitwebExtensions || {}));
 
 }(this));

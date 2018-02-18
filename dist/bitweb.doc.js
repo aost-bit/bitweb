@@ -1,4 +1,14 @@
-﻿(function (BitWeb) {
+﻿(function ($) {
+  "use strict";
+
+  // iPad等の初期処理.
+  if (bitlib.browser.ua.isTablet) {
+    bitlib.ui.onPreventDoubleTapZoom();
+  }
+
+})(jQuery);
+
+(function (BitWeb) {
   "use strict";
 
   BitWeb.TemplateStyleBase = (function () {
@@ -111,7 +121,7 @@
       }
 
       self.params = $.extend(true, {
-        testMode: false,
+        testMode: bitlib.string.toBoolean(bitlib.params.page.get("TestMode")),
         templateStyleCode: "",
         autoReload: false,
         reloadInterval: (60 * 1000)
@@ -260,9 +270,87 @@
     return MetricsBase;
   }());
 
+  BitWeb.TesterUtilityContainer = (function () {
+    var className = "TesterUtilityContainer";
+
+    function TesterUtilityContainer() {
+      // singleton
+      if (TesterUtilityContainer.prototype._singletonInstance) {
+        return TesterUtilityContainer.prototype._singletonInstance;
+      }
+      var self = this;
+      TesterUtilityContainer.prototype._singletonInstance = self;
+
+      var container = ko.observableArray();
+
+      self.utils = ko.pureComputed(function () {
+        return container();
+      }, self);
+
+      self._get = function (index) {
+        if (!bitlib.common.isNumber(index)) {
+          return null;
+        }
+        return self.utils()[index];
+      };
+
+      self._add = function (caption, callback, owner) {
+        if (!caption || !bitlib.common.isString(caption) || !bitlib.common.isFunction(callback)) {
+          return self;
+        }
+
+        container.push({
+          caption: caption,
+          callback: function () {
+            if ($.testerPicker.isVisible()) {
+              $.testerPicker.close();
+            }
+
+            callback.call((owner || self));
+          }
+        });
+
+        return self;
+      };
+
+      self
+        ._add("キャッシュをクリアする", function () {
+          bitlib.browser.clearLocalStorage();
+
+          bitlib.ui.lockScreen("すべてのキャッシュをクリアしました.<br />ページを一旦閉じ、開き直してください.");
+        });
+
+      return self;
+    }
+
+    TesterUtilityContainer.prototype.add = function (caption, callback, owner) {
+      this._add(caption, callback, owner);
+      return this;
+    };
+
+    TesterUtilityContainer.prototype.openPicker = function () {
+      var self = this;
+
+      if ($.testerPicker) {
+        $.testerPicker.open(self);
+      }
+
+      return self;
+    };
+
+    TesterUtilityContainer.getClassName = function () {
+      return className;
+    };
+
+    return TesterUtilityContainer;
+  }());
+
   bitlib.ko.addBindingHandler("bindHiddenKeys", {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
       var metrics = new BitWeb.MetricsBase();
+
+      var i = 0,
+        len = 0;
 
       var CHEET_COMMAND = [
         "UpArrow",
@@ -278,30 +366,84 @@
       ];
 
       var cheetKeyCodes = [];
-      for (var i = 0, len = CHEET_COMMAND.length; i < len; i++) {
-        var keyCode = bitlib.browser.getKeyCode(CHEET_COMMAND[i]);
-        if (0 < keyCode) {
-          cheetKeyCodes.push(keyCode);
+      for (i = 0, len = CHEET_COMMAND.length; i < len; i++) {
+        var cheetCode = bitlib.browser.getKeyCode(CHEET_COMMAND[i]);
+        if (0 < cheetCode) {
+          cheetKeyCodes.push(cheetCode);
         }
       }
 
-      var currentKeyCodes = [];
+      var currentCheetKeyCodes = [];
       if (0 < cheetKeyCodes.length) {
         if (!bitlib.browser.ua.isTablet) {
           $(window)
-            .keyup(function (event) {
-              if (currentKeyCodes.length === cheetKeyCodes.length) {
-                currentKeyCodes.shift();
+            .on("keyup", function (event) {
+              if (currentCheetKeyCodes.length === cheetKeyCodes.length) {
+                currentCheetKeyCodes.shift();
               }
 
-              currentKeyCodes.push(event.keyCode);
+              currentCheetKeyCodes.push(event.keyCode);
 
-              if (currentKeyCodes.toString() === currentKeyCodes.toString()) {
+              if (currentCheetKeyCodes.toString() === cheetKeyCodes.toString()) {
                 metrics.switchTestMode();
               }
             });
         }
       }
+
+      var tester = new BitWeb.TesterUtilityContainer();
+
+      var TESTER_COMMAND = [
+        "Q",
+        "Q",
+        "Q"
+      ];
+
+      var testerKeyCodes = [];
+      for (i = 0, len = TESTER_COMMAND.length; i < len; i++) {
+        var testerCode = bitlib.browser.getKeyCode(TESTER_COMMAND[i]);
+        if (0 < testerCode) {
+          testerKeyCodes.push(testerCode);
+        }
+      }
+
+      var currentTesterKeyCodes = [];
+      if (0 < testerKeyCodes.length) {
+        if (!bitlib.browser.ua.isTablet) {
+          $(window)
+            .on("keyup", function (event) {
+              if (!metrics.isValidTestMode()) {
+                return true;
+              }
+
+              if (currentTesterKeyCodes.length === testerKeyCodes.length) {
+                currentTesterKeyCodes.shift();
+              }
+
+              currentTesterKeyCodes.push(event.keyCode);
+
+              if (currentTesterKeyCodes.toString() === testerKeyCodes.toString()) {
+                tester.openPicker();
+              }
+
+              return true;
+            });
+        }
+      }
+
+      // initialize picker with some optional options
+      var options = $.extend({
+        title: "選択してください"
+      }, (allBindingsAccessor().testerPickerOptions || {}));
+
+      var widget = BitWeb.ViewboxWidgetFactory.create("testerPicker");
+
+      $(element).testerPicker(options);
+
+      // handle disposal (if KO removes by the template binding)
+      ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
+        $(element).testerPicker("destroy");
+      });
     }
   });
 
@@ -364,7 +506,7 @@
         return self;
       }
 
-      self._onAutoReload = function () {
+      self._startAutoReload = function () {
         if (!!tick || metrics.params.reloadInterval < 10000) {
           return self;
         }
@@ -374,7 +516,7 @@
         return self;
       };
 
-      self._offAutoReload = function () {
+      self._stopAutoReload = function () {
         if (tick) {
           clearTimeout(tick);
           tick = null;
@@ -387,14 +529,14 @@
       self.isCompleted.subscribe(function (isCompleted) {
         if (isCompleted) {
           if (metrics.isValidAutoReload()) {
-            self._onAutoReload();
+            self._startAutoReload();
           }
 
           metrics.isValidAutoReload.subscribe(function (isValid) {
             if (isValid) {
-              self._onAutoReload();
+              self._startAutoReload();
             } else {
-              self._offAutoReload();
+              self._stopAutoReload();
             }
           });
         }

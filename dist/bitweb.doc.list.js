@@ -92,18 +92,18 @@
         newElems = newElems || [];
         newElems = bitlib.common.isArray(newElems) ? newElems : [newElems];
 
-        var listElems = [];
+        var elems = [];
         for (var i = 0, len = newElems.length; i < len; i++) {
-          if (!newElems[i] || !newElems[i].isListElementViewModel) {
+          if (!bitlib.common.isObject(newElems[i]) || !newElems[i].isListElementViewModel) {
             continue;
           }
 
           newElems[i].id = newElems[i].id.toString();
-          listElems.push(newElems[i]);
+          elems.push(newElems[i]);
         }
 
-        if (0 < listElems.length) {
-          elements.push.apply(elements, listElems);
+        if (0 < elems.length) {
+          elements.push.apply(elements, elems);
         }
 
         return self;
@@ -149,19 +149,26 @@
             selectedElementId(newId);
             return false;
           }
+          return true;
         });
 
         return self;
       };
 
       self.selectedElement = ko.pureComputed(function () {
-        var result = undefined;
+        var id = selectedElementId();
 
+        if (!id) {
+          return null;
+        }
+
+        var result = null;
         bitlib.array.each(elements, function (i, elem) {
           if (elem.id === id) {
             result = elem;
             return false;
           }
+          return true;
         });
 
         return result;
@@ -175,11 +182,12 @@
         }
 
         var index = -1;
-        bitlib.array.each(self.visibleElements, function (i, elem) {
+        bitlib.array.each(elements, function (i, elem) {
           if (elem.id === id) {
             index = i;
             return false;
           }
+          return true;
         });
 
         return index;
@@ -201,6 +209,20 @@
 
       var totalElementsPerPage = ko.observable(metrics.params.totalElementsPerPage);
 
+      self.totalElementsPerPage = ko.pureComputed(function () {
+        return totalElementsPerPage();
+      }, self);
+
+      self._setTotalElementsPerPage = function (num) {
+        num = bitlib.common.toInteger(num);
+
+        if (bitlib.common.isNumber(num) && !isNaN(num)) {
+          totalElementsPerPage(num);
+        }
+
+        return self;
+      };
+
       var selectedPageIndex = ko.observable(0);
 
       self.selectedPageIndex = ko.pureComputed(function () {
@@ -208,10 +230,7 @@
       }, self);
 
       self.firstElementIndexOnPage = ko.pureComputed(function () {
-        var length = totalElementsPerPage(),
-          index = selectedPageIndex();
-
-        return length * index;
+        return self.totalElementsPerPage() * self.selectedPageIndex();
       }, self);
 
       self.maxPageIndex = ko.pureComputed(function () {
@@ -222,6 +241,9 @@
         }
 
         var maxLength = self.visibleElements().length;
+        if (maxLength === 0) {
+          return 0;
+        }
 
         return Math.ceil(maxLength / length) - 1;
       }, self);
@@ -258,7 +280,7 @@
       }, self);
 
       self.elementsOnSelectedPage = ko.pureComputed(function () {
-        var length = totalElementsPerPage(),
+        var length = self.totalElementsPerPage(),
           elems = self.visibleElements();
 
         if (!length || length < 1) {
@@ -277,8 +299,8 @@
       }, self);
 
       self.backwardPageIndex = ko.pureComputed(function () {
-        var movableIndex = pageRanges() + 1,
-          selectedIndex = selectedPageIndex();
+        var movableIndex = self.pageRanges() + 1,
+          selectedIndex = self.selectedPageIndex();
 
         if (selectedIndex < movableIndex) {
           return -1;
@@ -288,8 +310,8 @@
       }, self);
 
       self.forwardPageIndex = ko.pureComputed(function () {
-        var movableIndex = pageRanges() + 1,
-          selectedIndex = selectedPageIndex();
+        var movableIndex = self.pageRanges() + 1,
+          selectedIndex = self.selectedPageIndex();
 
         var maxIndex = self.maxPageIndex();
         if ((maxIndex - movableIndex) < selectedIndex) {
@@ -327,12 +349,15 @@
           }
         });
 
+        var i = 0,
+          len = 0;
+
         // 更新後の選択位置を取得する.
         var newIndex = -1,
           focusedElem = self.selectedElement();
 
         if (focusedElem) {
-          for (var i = 0, len = newElems.length; i < len; i++) {
+          for (i = 0, len = newElems.length; i < len; i++) {
             if (newElems[i].id === focusedElem.id) {
               newIndex = i + 1;
               break;
@@ -342,12 +367,12 @@
 
         // 更新後のページ選択位置を取得する.
         var newPageIndex = -1,
-          focusedPageIndex = selectedPageIndex();
+          focusedPageIndex = self.selectedPageIndex();
 
         if (-1 < focusedPageIndex) {
-          var elemLength = totalElementsPerPage();
+          var elemLength = self.totalElementsPerPage();
 
-          for (var i = 0, len = self.maxPageIndex(); i < len; i++) {
+          for (i = 0, len = self.maxPageIndex() + 1; i < len; i++) {
             if ((i * elemLength) < newIndex && newIndex <= ((i + 1) * elemLength)) {
               newPageIndex = i;
               break;
@@ -366,23 +391,22 @@
 
       self = $.extend(self, self.params);
 
-      elements.subscribe(function () {
+      self.elements.subscribe(function () {
         self._setSelectedElementId("");
       });
 
-      selectedElementId.subscribe(function (newId) {
+      self.selectedElement.subscribe(function (selectedElem) {
         bitlib.array.each(elements, function (i, elem) {
           elem.blur();
         });
 
-        var selectedElem = self.selectedElement();
         if (selectedElem) {
           selectedElem.focus();
         }
       });
 
       self.maxPageIndex.subscribe(function (newVal) {
-        if (newVal < selectedPageIndex()) {
+        if (newVal < self.selectedPageIndex()) {
           self._setSelectedPageIndex(0);
         }
       });
@@ -532,7 +556,7 @@
 
       index = bitlib.common.toInteger(index);
 
-      if (isNaN(index)) {
+      if (isNaN(index) || index < 0) {
         return self;
       }
 
@@ -548,7 +572,7 @@
 
       index = bitlib.common.toInteger(index);
 
-      if (isNaN(index)) {
+      if (isNaN(index) || index < 0) {
         return false;
       }
 
@@ -618,10 +642,12 @@
   BitWeb.ListElementBase = (function () {
     var className = "ListElementBase";
 
-    function ListElementBase() {
-      var self = BitWeb.ResourceBase.apply(this, arguments);
+    function ListElementBase(id, params) {
+      var self = BitWeb.ResourceBase.apply(this, [params]);
 
       self.isListElementViewModel = true;
+
+      self.id = id || bitlib.common.publishTemporaryUniqueName();
 
       var isFocused = ko.observable(false);
 
