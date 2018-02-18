@@ -1,0 +1,197 @@
+/* jqueryui dialog widget. */
+
+.ui-front {
+  z-index: 1050;
+}
+
+.ui-dialog .ui-dialog-titlebar {
+  padding: .2em 1em;
+}
+
+.ui-dialog .ui-widget-header .ui-dialog-title {
+  font-size: 12pt;
+  font-weight: normal;
+}
+
+.ui-dialog .ui-widget-content {
+  font-size: 11.5pt;
+}
+
+.ui-dialog .ui-dialog-content {
+  padding: .8em 1em;
+}
+
+.ui-dialog .ui-dialog-buttonpane {
+  margin-top: 0;
+}
+
+
+/* jqueryui datepicker widget. */
+
+.ui-datepicker .ui-datepicker-header .ui-datepicker-title {
+  font-weight: normal;
+}
+
+.ui-datepicker .ui-datepicker-header .ui-datepicker-title select {
+  margin-right: 5px;
+}
+
+.ui-datepicker div.ui-datepicker-buttonpane button.ui-datepicker-current {
+  font-weight: normal;
+  opacity: 1;
+  filter: Alpha(Opacity=100);
+  -moz-opacity: 1.0;
+}
+
+.ui-datepicker div.ui-datepicker-buttonpane button.ui-datepicker-close {
+  font-weight: normal;
+}
+
+
+/* bitweb custom styles. */
+
+body {
+  background-color: #f0f0f0;
+  font-family: "Meiryo UI", Meiryo, sans-serif;
+  line-height: normal;
+  margin: 0;
+  /* tablet:リンク長押しのポップアップを無効化 */
+  -webkit-touch-callout: none;
+  /* tablet:テキスト長押しの選択ボックスを無効化 */
+  -webkit-user-select: none;
+}
+
+a {
+  color: #00B7FF;
+}
+
+input[type="checkbox"] {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+input::-ms-clear {
+  visibility: hidden
+}
+
+input::-ms-reveal {
+  visibility: hidden
+}
+
+label {
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+p {
+  margin: 10px 2px;
+}
+
+pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+table th,
+table td {
+  padding: 0;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#header {
+  background-color: #000;
+  color: #d7d7d7;
+}
+
+#header .header-contents>div {
+  display: inline-block;
+  width: 100%;
+}
+
+#header .header-contents>div>ul {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#header .header-contents>div>ul>li {
+  display: inline-block;
+  float: left;
+}
+
+#header .header-contents>div>ul.contents-right {
+  float: right;
+}
+
+#footer {
+  background-color: #000;
+  color: #d7d7d7;
+}
+
+#footer .footer-contents>div {
+  display: inline-block;
+  width: 100%;
+}
+
+#footer .footer-contents>div>ul {
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+#footer .footer-contents>div>ul>li {
+  display: inline-block;
+  float: left;
+}
+
+#footer .footer-contents>div>ul.contents-right {
+  float: right;
+}
+
+#contents {
+  color: #323232;
+}
+
+#screen-lock {
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAABGdBTUEAAK/INwWK6QAAABl0RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAAbSURBVHjaYmRgYJjJQARgYiASjCqkjkKAAAMABFMArWHoyIEAAAAASUVORK5CYII=');
+  filter: alpha(opacity=80);
+  font-family: Helvetica, Arial, sans-serif;
+  left: 0;
+  position: absolute;
+  top: 0;
+  z-index: 1100;
+}
+
+#screen-lock-contents {
+  color: #fff;
+  display: inline-block;
+  position: relative;
+  text-shadow: 0 0 0 #000;
+}
+
+#fade-element {
+  background-color: rgba(158, 214, 191, 0.75);
+  border: 1px solid #a7a7a7;
+  filter: progid: DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr=#df9ed6bf, EndColorStr=#df9ed6bf);
+  font-family: Helvetica, Arial, sans-serif;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr=#df9ed6bf,EndColorStr=#df9ed6bf)";
+  left: 0;
+  position: absolute;
+  top: 0;
+  z-index: 1150;
+}
+
+#fade-element-contents {
+  font-size: 12pt;
+  display: inline-block;
+  margin: 1.3em;
+  position: relative;
+}
