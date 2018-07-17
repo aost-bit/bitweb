@@ -1,512 +1,527 @@
 ﻿(function (BitWeb) {
-    "use strict";
+  "use strict";
 
-    BitWeb.RepositoryBase = (function () {
-        var className = "RepositoryBase";
+  BitWeb.RepositoryBase = (function () {
+    var className = "RepositoryBase";
 
-        function RepositoryBase(params) {
-            var self = this;
+    function RepositoryBase(params) {
+      var self = this;
 
-            self.params = params || {};
+      self.params = params || {};
 
-            self.observable = ko.observable(self); // 通知用の observable object
+      self.observable = ko.observable(self); // 通知用の observable object
 
-            var source = [];
+      var changedTimes = 0;
 
-            self._getSourceLength = function () {
-                return source.length;
-            };
+      self._getChangedTimes = function () {
+        return changedTimes;
+      };
 
-            self._getAllSources = function () {
-                return bitlib.common.copyDeep(source);
-            };
+      var source = [];
 
-            self._addSource = function (newSource) {
-                newSource = newSource || [];
-                newSource = bitlib.common.isArray(newSource) ? newSource : [newSource];
+      self._getSourceLength = function () {
+        return source.length;
+      };
 
-                newSource = bitlib.array.removeNullOrUndefined(newSource);
+      self._getAllSources = function () {
+        return bitlib.common.copyDeep(source);
+      };
 
-                if (newSource.length === 0) {
-                    return self;
-                }
+      self._addSource = function (newSource) {
+        newSource = newSource || [];
+        newSource = bitlib.common.isArray(newSource) ? newSource : [newSource];
 
-                source = source.concat(newSource);
+        newSource = bitlib.array.removeNullOrUndefined(newSource);
 
-                return self;
-            };
-
-            self._clearSources = function () {
-                source = [];
-                return self;
-            };
-
-            self = $.extend(self, self.params);
-            return self;
+        if (newSource.length === 0) {
+          return self;
         }
 
-        RepositoryBase.prototype.getSourceLength = function () {
-            return this._getSourceLength();
-        };
+        source = source.concat(newSource);
 
-        RepositoryBase.prototype.getSource = function (begin, end) {
-            var source = this._getAllSources();
+        return self;
+      };
 
-            begin = begin || 0;
-            end = end || source.length;
+      self._clearSources = function () {
+        source = [];
+        return self;
+      };
 
-            return source.slice(begin, end);
-        };
+      self = $.extend(self, self.params);
 
-        RepositoryBase.prototype.addSource = function (source) {
-            this._addSource(source);
-            return this;
-        };
+      self.observable.subscribe(function () {
+        changedTimes++;
+      });
 
-        RepositoryBase.getClassName = function () {
-            return className;
-        };
+      return self;
+    }
 
-        return RepositoryBase;
-    }());
+    RepositoryBase.prototype.getChangedTimes = function () {
+      return this._getChangedTimes();
+    };
 
-    BitWeb.MasterRepositoryBase = (function () {
-        var className = "MasterRepositoryBase";
+    RepositoryBase.prototype.getSourceLength = function () {
+      return this._getSourceLength();
+    };
 
-        var READY = "READY",
-            LOADING = "LOADING",
-            LOADED = "LOADED",
-            TIMEOUT = "TIMEOUT";
+    RepositoryBase.prototype.getSource = function (begin, end) {
+      var source = this._getAllSources();
 
-        function MasterRepositoryBase() {
-            var self = BitWeb.RepositoryBase.apply(this, arguments);
+      begin = begin || 0;
+      end = end || source.length;
 
-            var status = ko.observable(READY);
+      return source.slice(begin, end);
+    };
 
-            self.isReady = ko.pureComputed(function () {
-                return status() === READY;
-            }, self);
+    RepositoryBase.prototype.addSource = function (source) {
+      this._addSource(source);
+      return this;
+    };
 
-            self.isLoading = ko.pureComputed(function () {
-                return status() === LOADING;
-            }, self);
+    RepositoryBase.getClassName = function () {
+      return className;
+    };
 
-            self.isLoaded = ko.pureComputed(function () {
-                return status() === LOADED;
-            }, self);
+    return RepositoryBase;
+  }());
 
-            self.isTimeout = ko.pureComputed(function () {
-                return status() === TIMEOUT;
-            }, self);
+  BitWeb.MasterRepositoryBase = (function () {
+    var className = "MasterRepositoryBase";
 
-            self._setStatus = function (newStatus) {
-                if (status() !== newStatus) {
-                    status(newStatus);
-                }
-                return self;
-            };
+    var READY = "READY",
+      LOADING = "LOADING",
+      LOADED = "LOADED",
+      TIMEOUT = "TIMEOUT";
 
-            var master = [];
+    function MasterRepositoryBase() {
+      var self = BitWeb.RepositoryBase.apply(this, arguments);
 
-            self._getMasterLength = function () {
-                return master.length;
-            };
+      var status = ko.observable(READY);
 
-            self._getAllMasters = function () {
-                return bitlib.common.copyDeep(master);
-            };
+      self.isReady = ko.pureComputed(function () {
+        return status() === READY;
+      }, self);
 
-            self._clearMasters = function () {
-                master = [];
-                return self;
-            };
+      self.isLoading = ko.pureComputed(function () {
+        return status() === LOADING;
+      }, self);
 
-            var filterPolicies = [];
+      self.isLoaded = ko.pureComputed(function () {
+        return status() === LOADED;
+      }, self);
 
-            self._addFilterPolicy = function (newPolicies) {
-                newPolicies = newPolicies || [];
-                newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
+      self.isTimeout = ko.pureComputed(function () {
+        return status() === TIMEOUT;
+      }, self);
 
-                newPolicies = bitlib.array.removeNullOrUndefined(newPolicies);
+      self._setStatus = function (newStatus) {
+        if (status() !== newStatus) {
+          status(newStatus);
+        }
+        return self;
+      };
 
-                if (newPolicies.length === 0) {
-                    return self;
-                }
+      var master = [];
 
-                for (var i = 0, len = newPolicies.length; i < len; i++) {
-                    if (bitlib.common.isFunction(newPolicies[i])) {
-                        filterPolicies.push(newPolicies[i]);
-                    }
-                }
+      self._getMasterLength = function () {
+        return master.length;
+      };
 
-                return self;
-            };
+      self._getAllMasters = function () {
+        return bitlib.common.copyDeep(master);
+      };
 
-            self._clearFilterPolicies = function () {
-                filterPolicies = [];
-                return self;
-            };
+      self._clearMasters = function () {
+        master = [];
+        return self;
+      };
 
-            function applyFilterPolicies(originalMaster) {
-                originalMaster = originalMaster || [];
+      var filterPolicies = [];
 
-                if (originalMaster.length === 0 || filterPolicies.length === 0) {
-                    return originalMaster;
-                }
+      self._addFilterPolicy = function (newPolicies) {
+        newPolicies = newPolicies || [];
+        newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
 
-                var cloneMaster = bitlib.common.copyDeep(originalMaster);
+        newPolicies = bitlib.array.removeNullOrUndefined(newPolicies);
 
-                bitlib.array.each(filterPolicies, function (i, policy) {
-                    cloneMaster = policy(cloneMaster);
-                });
-
-                return cloneMaster;
-            }
-
-            var sortPolicy;
-
-            self._setSortPolicy = function (newPolicy) {
-                if (bitlib.common.isFunction(newPolicy)) {
-                    sortPolicy = newPolicy;
-                }
-                return self;
-            };
-
-            self._deleteSortPolicy = function () {
-                sortPolicy = undefined;
-                return self;
-            };
-
-            function applySortPolicy(originalMaster) {
-                originalMaster = originalMaster || [];
-
-                if (originalMaster.length < 2 || !sortPolicy) {
-                    return originalMaster;
-                }
-
-                var cloneMaster = bitlib.common.copyDeep(originalMaster);
-                cloneMaster.sort(sortPolicy);
-
-                return cloneMaster;
-            }
-
-            self._applyPolicies = function () {
-                var originalMaster = self._getAllSources();
-
-                originalMaster = applyFilterPolicies(originalMaster);
-                originalMaster = applySortPolicy(originalMaster);
-
-                master = originalMaster;
-
-                self.observable.notifySubscribers(self);
-
-                return self;
-            };
-
-            self = $.extend(self, self.params);
-            return self;
+        if (newPolicies.length === 0) {
+          return self;
         }
 
-        var _super = BitWeb.RepositoryBase;
-        inherits(MasterRepositoryBase, _super);
-
-        MasterRepositoryBase.prototype.loading = function () {
-            this._setStatus(LOADING);
-            return this;
-        };
-
-        MasterRepositoryBase.prototype.loaded = function () {
-            this._setStatus(LOADED);
-            return this;
-        };
-
-        MasterRepositoryBase.prototype.createNullObject = function () {
-            return {};
-        };
-
-        MasterRepositoryBase.prototype.isNullObject = function (obj) {
-            if (!obj || !bitlib.common.isObject(obj)) {
-                return false;
-            }
-
-            var nullObj = this.createNullObject();
-            if (bitlib.json.stringify(nullObj) === bitlib.json.stringify(obj)) {
-                return true;
-            }
-
-            return false;
-        };
-
-        MasterRepositoryBase.prototype.getMasterLength = function () {
-            return this._getMasterLength();
-        };
-
-        MasterRepositoryBase.prototype.getMaster = function (begin, end) {
-            var master = this._getAllMasters();
-
-            begin = begin || 0;
-            end = end || master.length;
-
-            return master.slice(begin, end);
-        };
-
-        MasterRepositoryBase.prototype.getFallbackMaster = function () {
-            var self = this;
-
-            if (0 < self._getMasterLength()) {
-                return self._getAllMasters()[0];
-            }
-
-            return self.createNullObject();
-        };
-
-        // 指定した条件を満たすレコードを取得する.
-        MasterRepositoryBase.prototype.select = function (pred) {
-            var master = this._getAllMasters();
-
-            if (!pred || !bitlib.common.isFunction(pred)) {
-                return master;
-            }
-
-            var results = [];
-            for (var i = 0, len = master.length; i < len; i++) {
-                if (pred(master[i])) {
-                    results.push(master[i]);
-                }
-            }
-
-            return results;
-        };
-
-        MasterRepositoryBase.prototype.clear = function () {
-            this
-                ._clearMasters()
-                ._clearSources();
-
-            return this;
-        };
-
-        MasterRepositoryBase.prototype.applyPolicies = function () {
-            this._applyPolicies();
-            return this;
-        };
-
-        MasterRepositoryBase.prototype.addFilterPolicy = function (policy) {
-            this._addFilterPolicy(policy);
-            return this;
-        };
-
-        MasterRepositoryBase.prototype.clearFilterPolicies = function () {
-            this._clearFilterPolicies();
-            return this;
-        };
-
-        MasterRepositoryBase.prototype.setSortPolicy = function (policy) {
-            this._setSortPolicy(policy);
-            return this;
-        };
-
-        MasterRepositoryBase.prototype.deleteSortPolicy = function () {
-            this._deleteSortPolicy();
-            return this;
-        };
-
-        MasterRepositoryBase.prototype.load = function (master) {
-            var self = this,
-                defer = $.Deferred();
-
-            if (self.isLoaded()) {
-                return defer.resolve().promise();
-            }
-
-            if (self.isLoading()) {
-                self.isLoaded.subscribe(function () {
-                    defer.resolve();
-                });
-
-                return defer.promise();
-            }
-
-            master = master || [];
-            master = bitlib.common.isArray(master) ? master : [master];
-
-            self
-                .clear()
-                .addSource(master)
-                .applyPolicies()
-                .loaded();
-
-            return defer.resolve().promise();
-        };
-
-        MasterRepositoryBase.getClassName = function () {
-            return className;
-        };
-
-        return MasterRepositoryBase;
-    }());
-
-    BitWeb.DataRepositoryBase = (function () {
-        var className = "DataRepositoryBase";
-
-        function DataRepositoryBase() {
-            var self = BitWeb.RepositoryBase.apply(this, arguments);
-
-            var data = [];
-
-            self._getDataLength = function () {
-                return data.length;
-            };
-
-            self._getAllDatas = function () {
-                return bitlib.common.copyDeep(data);
-            };
-
-            self._clearDatas = function () {
-                data = [];
-                return self;
-            };
-
-            var filterPolicies = [];
-
-            self._addFilterPolicy = function (newPolicies) {
-                newPolicies = newPolicies || [];
-                newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
-
-                newPolicies = bitlib.array.removeNullOrUndefined(newPolicies);
-
-                if (newPolicies.length === 0) {
-                    return self;
-                }
-
-                for (var i = 0, len = newPolicies.length; i < len; i++) {
-                    if (bitlib.common.isFunction(newPolicies[i])) {
-                        filterPolicies.push(newPolicies[i]);
-                    }
-                }
-
-                return self;
-            };
-
-            self._clearFilterPolicies = function () {
-                filterPolicies = [];
-                return self;
-            };
-
-            function applyFilterPolicies(originalData) {
-                originalData = originalData || [];
-
-                if (originalData.length === 0 || filterPolicies.length === 0) {
-                    return originalData;
-                }
-
-                var cloneData = bitlib.common.copyDeep(originalData);
-
-                bitlib.array.each(filterPolicies, function (i, policy) {
-                    cloneData = policy(cloneData);
-                });
-
-                return cloneData;
-            }
-
-            var sortPolicy;
-
-            self._setSortPolicy = function (newPolicy) {
-                if (bitlib.common.isFunction(newPolicy)) {
-                    sortPolicy = newPolicy;
-                }
-                return self;
-            };
-
-            self._deleteSortPolicy = function () {
-                sortPolicy = undefined;
-                return self;
-            };
-
-            function applySortPolicy(originalData) {
-                originalData = originalData || [];
-
-                if (originalData.length < 2 || !sortPolicy) {
-                    return originalData;
-                }
-
-                var cloneData = bitlib.common.copyDeep(originalData);
-                cloneData.sort(sortPolicy);
-
-                return cloneData;
-            }
-
-            self._applyPolicies = function () {
-                var originalData = self._getAllSources();
-
-                originalData = applyFilterPolicies(originalData);
-                originalData = applySortPolicy(originalData);
-
-                data = originalData;
-
-                self.observable.notifySubscribers(self);
-
-                return self;
-            };
-
-            self = $.extend(self, self.params);
-            return self;
+        for (var i = 0, len = newPolicies.length; i < len; i++) {
+          if (bitlib.common.isFunction(newPolicies[i])) {
+            filterPolicies.push(newPolicies[i]);
+          }
         }
 
-        var _super = BitWeb.RepositoryBase;
-        inherits(DataRepositoryBase, _super);
+        return self;
+      };
 
-        DataRepositoryBase.prototype.getDataLength = function () {
-            return this._getDataLength();
-        };
+      self._clearFilterPolicies = function () {
+        filterPolicies = [];
+        return self;
+      };
 
-        DataRepositoryBase.prototype.getData = function (begin, end) {
-            var data = this._getAllDatas();
+      function applyFilterPolicies(originalMaster) {
+        originalMaster = originalMaster || [];
 
-            begin = begin || 0;
-            end = end || data.length;
+        if (originalMaster.length === 0 || filterPolicies.length === 0) {
+          return originalMaster;
+        }
 
-            return data.slice(begin, end);
-        };
+        var cloneMaster = bitlib.common.copyDeep(originalMaster);
 
-        DataRepositoryBase.prototype.clear = function () {
-            this
-                ._clearDatas()
-                ._clearSources();
+        bitlib.array.each(filterPolicies, function (i, policy) {
+          cloneMaster = policy(cloneMaster);
+        });
 
-            return this;
-        };
+        return cloneMaster;
+      }
 
-        DataRepositoryBase.prototype.applyPolicies = function () {
-            this._applyPolicies();
-            return this;
-        };
+      var sortPolicy;
 
-        DataRepositoryBase.prototype.addFilterPolicy = function (policy) {
-            this._addFilterPolicy(policy);
-            return this;
-        };
+      self._setSortPolicy = function (newPolicy) {
+        if (bitlib.common.isFunction(newPolicy)) {
+          sortPolicy = newPolicy;
+        }
+        return self;
+      };
 
-        DataRepositoryBase.prototype.clearFilterPolicies = function () {
-            this._clearFilterPolicies();
-            return this;
-        };
+      self._deleteSortPolicy = function () {
+        sortPolicy = undefined;
+        return self;
+      };
 
-        DataRepositoryBase.prototype.setSortPolicy = function (policy) {
-            this._setSortPolicy(policy);
-            return this;
-        };
+      function applySortPolicy(originalMaster) {
+        originalMaster = originalMaster || [];
 
-        DataRepositoryBase.prototype.deleteSortPolicy = function () {
-            this._deleteSortPolicy();
-            return this;
-        };
+        if (originalMaster.length < 2 || !sortPolicy) {
+          return originalMaster;
+        }
 
-        DataRepositoryBase.getClassName = function () {
-            return className;
-        };
+        var cloneMaster = bitlib.common.copyDeep(originalMaster);
+        cloneMaster.sort(sortPolicy);
 
-        return DataRepositoryBase;
-    }());
+        return cloneMaster;
+      }
+
+      self._applyPolicies = function () {
+        var originalMaster = self._getAllSources();
+
+        originalMaster = applyFilterPolicies(originalMaster);
+        originalMaster = applySortPolicy(originalMaster);
+
+        master = originalMaster;
+
+        self.observable.notifySubscribers(self);
+
+        return self;
+      };
+
+      self = $.extend(self, self.params);
+      return self;
+    }
+
+    var _super = BitWeb.RepositoryBase;
+    inherits(MasterRepositoryBase, _super);
+
+    MasterRepositoryBase.prototype.loading = function () {
+      this._setStatus(LOADING);
+      return this;
+    };
+
+    MasterRepositoryBase.prototype.loaded = function () {
+      this._setStatus(LOADED);
+      return this;
+    };
+
+    MasterRepositoryBase.prototype.createNullObject = function () {
+      return {};
+    };
+
+    MasterRepositoryBase.prototype.isNullObject = function (obj) {
+      if (!obj || !bitlib.common.isObject(obj)) {
+        return false;
+      }
+
+      var nullObj = this.createNullObject();
+      if (bitlib.json.stringify(nullObj) === bitlib.json.stringify(obj)) {
+        return true;
+      }
+
+      return false;
+    };
+
+    MasterRepositoryBase.prototype.getMasterLength = function () {
+      return this._getMasterLength();
+    };
+
+    MasterRepositoryBase.prototype.getMaster = function (begin, end) {
+      var master = this._getAllMasters();
+
+      begin = begin || 0;
+      end = end || master.length;
+
+      return master.slice(begin, end);
+    };
+
+    MasterRepositoryBase.prototype.getFallbackMaster = function () {
+      var self = this;
+
+      if (0 < self._getMasterLength()) {
+        return self._getAllMasters()[0];
+      }
+
+      return self.createNullObject();
+    };
+
+    // 指定した条件を満たすレコードを取得する.
+    MasterRepositoryBase.prototype.select = function (pred) {
+      var master = this._getAllMasters();
+
+      if (!pred || !bitlib.common.isFunction(pred)) {
+        return master;
+      }
+
+      var results = [];
+      for (var i = 0, len = master.length; i < len; i++) {
+        if (pred(master[i])) {
+          results.push(master[i]);
+        }
+      }
+
+      return results;
+    };
+
+    MasterRepositoryBase.prototype.clear = function () {
+      this
+        ._clearMasters()
+        ._clearSources();
+
+      return this;
+    };
+
+    MasterRepositoryBase.prototype.applyPolicies = function () {
+      this._applyPolicies();
+      return this;
+    };
+
+    MasterRepositoryBase.prototype.addFilterPolicy = function (policy) {
+      this._addFilterPolicy(policy);
+      return this;
+    };
+
+    MasterRepositoryBase.prototype.clearFilterPolicies = function () {
+      this._clearFilterPolicies();
+      return this;
+    };
+
+    MasterRepositoryBase.prototype.setSortPolicy = function (policy) {
+      this._setSortPolicy(policy);
+      return this;
+    };
+
+    MasterRepositoryBase.prototype.deleteSortPolicy = function () {
+      this._deleteSortPolicy();
+      return this;
+    };
+
+    MasterRepositoryBase.prototype.load = function (master) {
+      var self = this,
+        defer = $.Deferred();
+
+      if (self.isLoaded()) {
+        return defer.resolve().promise();
+      }
+
+      if (self.isLoading()) {
+        self.isLoaded.subscribe(function () {
+          defer.resolve();
+        });
+
+        return defer.promise();
+      }
+
+      master = master || [];
+      master = bitlib.common.isArray(master) ? master : [master];
+
+      self
+        .clear()
+        .addSource(master)
+        .applyPolicies()
+        .loaded();
+
+      return defer.resolve().promise();
+    };
+
+    MasterRepositoryBase.getClassName = function () {
+      return className;
+    };
+
+    return MasterRepositoryBase;
+  }());
+
+  BitWeb.DataRepositoryBase = (function () {
+    var className = "DataRepositoryBase";
+
+    function DataRepositoryBase() {
+      var self = BitWeb.RepositoryBase.apply(this, arguments);
+
+      var data = [];
+
+      self._getDataLength = function () {
+        return data.length;
+      };
+
+      self._getAllDatas = function () {
+        return bitlib.common.copyDeep(data);
+      };
+
+      self._clearDatas = function () {
+        data = [];
+        return self;
+      };
+
+      var filterPolicies = [];
+
+      self._addFilterPolicy = function (newPolicies) {
+        newPolicies = newPolicies || [];
+        newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
+
+        newPolicies = bitlib.array.removeNullOrUndefined(newPolicies);
+
+        if (newPolicies.length === 0) {
+          return self;
+        }
+
+        for (var i = 0, len = newPolicies.length; i < len; i++) {
+          if (bitlib.common.isFunction(newPolicies[i])) {
+            filterPolicies.push(newPolicies[i]);
+          }
+        }
+
+        return self;
+      };
+
+      self._clearFilterPolicies = function () {
+        filterPolicies = [];
+        return self;
+      };
+
+      function applyFilterPolicies(originalData) {
+        originalData = originalData || [];
+
+        if (originalData.length === 0 || filterPolicies.length === 0) {
+          return originalData;
+        }
+
+        var cloneData = bitlib.common.copyDeep(originalData);
+
+        bitlib.array.each(filterPolicies, function (i, policy) {
+          cloneData = policy(cloneData);
+        });
+
+        return cloneData;
+      }
+
+      var sortPolicy;
+
+      self._setSortPolicy = function (newPolicy) {
+        if (bitlib.common.isFunction(newPolicy)) {
+          sortPolicy = newPolicy;
+        }
+        return self;
+      };
+
+      self._deleteSortPolicy = function () {
+        sortPolicy = undefined;
+        return self;
+      };
+
+      function applySortPolicy(originalData) {
+        originalData = originalData || [];
+
+        if (originalData.length < 2 || !sortPolicy) {
+          return originalData;
+        }
+
+        var cloneData = bitlib.common.copyDeep(originalData);
+        cloneData.sort(sortPolicy);
+
+        return cloneData;
+      }
+
+      self._applyPolicies = function () {
+        var originalData = self._getAllSources();
+
+        originalData = applyFilterPolicies(originalData);
+        originalData = applySortPolicy(originalData);
+
+        data = originalData;
+
+        self.observable.notifySubscribers(self);
+
+        return self;
+      };
+
+      self = $.extend(self, self.params);
+      return self;
+    }
+
+    var _super = BitWeb.RepositoryBase;
+    inherits(DataRepositoryBase, _super);
+
+    DataRepositoryBase.prototype.getDataLength = function () {
+      return this._getDataLength();
+    };
+
+    DataRepositoryBase.prototype.getData = function (begin, end) {
+      var data = this._getAllDatas();
+
+      begin = begin || 0;
+      end = end || data.length;
+
+      return data.slice(begin, end);
+    };
+
+    DataRepositoryBase.prototype.clear = function () {
+      this
+        ._clearDatas()
+        ._clearSources();
+
+      return this;
+    };
+
+    DataRepositoryBase.prototype.applyPolicies = function () {
+      this._applyPolicies();
+      return this;
+    };
+
+    DataRepositoryBase.prototype.addFilterPolicy = function (policy) {
+      this._addFilterPolicy(policy);
+      return this;
+    };
+
+    DataRepositoryBase.prototype.clearFilterPolicies = function () {
+      this._clearFilterPolicies();
+      return this;
+    };
+
+    DataRepositoryBase.prototype.setSortPolicy = function (policy) {
+      this._setSortPolicy(policy);
+      return this;
+    };
+
+    DataRepositoryBase.prototype.deleteSortPolicy = function () {
+      this._deleteSortPolicy();
+      return this;
+    };
+
+    DataRepositoryBase.getClassName = function () {
+      return className;
+    };
+
+    return DataRepositoryBase;
+  }());
 
 }(BitWeb || {}));

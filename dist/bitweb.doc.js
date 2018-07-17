@@ -450,13 +450,13 @@
   BitWeb.DocumentBase = (function () {
     var className = "DocumentBase";
 
-    var metrics = undefined;
-
     var READY = "READY",
       LOADING = "LOADING",
       DONE = "DONE",
       TIMEOUT = "TIMEOUT",
       ERROR = "ERROR";
+
+    var metrics;
 
     function DocumentBase() {
       var self = BitWeb.ResourceBase.apply(this, arguments);

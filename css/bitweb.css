@@ -25,6 +25,10 @@
   margin-top: 0;
 }
 
+.ui-dialog .ui-dialog-buttonpane .ui-button {
+  font-size: 11pt;
+}
+
 
 /* jqueryui datepicker widget. */
 

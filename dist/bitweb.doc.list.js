@@ -33,7 +33,7 @@
   BitWeb.ListDocumentBase = (function () {
     var className = "ListDocumentBase";
 
-    var metrics = undefined;
+    var metrics;
 
     function ListDocumentBase() {
       var self = BitWeb.DocumentBase.apply(this, arguments);
@@ -115,7 +115,7 @@
       };
 
       self.maxElementIndex = ko.pureComputed(function () {
-        var len = elements().length;
+        var len = self.elements().length;
         return (len === 0) ? 0 : (len - 1);
       }, self);
 
@@ -144,7 +144,7 @@
           return self;
         }
 
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           if (elem.id === newId) {
             selectedElementId(newId);
             return false;
@@ -163,7 +163,7 @@
         }
 
         var result = null;
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           if (elem.id === id) {
             result = elem;
             return false;
@@ -182,7 +182,7 @@
         }
 
         var index = -1;
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           if (elem.id === id) {
             index = i;
             return false;
@@ -327,7 +327,7 @@
         }
 
         var prevElem, nextElem;
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           if (elem.id === prevId) {
             prevElem = elem;
           }
@@ -339,7 +339,7 @@
         });
 
         var newElems = [];
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           if (elem.id === prevId) {
             newElems.push(nextElem);
           } else if (elem.id === nextId) {
@@ -396,7 +396,7 @@
       });
 
       self.selectedElement.subscribe(function (selectedElem) {
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           elem.blur();
         });
 
@@ -483,8 +483,8 @@
         return self;
       }
 
-      var elems = self.visibleElements(),
-        lastIndex = elements.length - 1;
+      var elems = self.visibleElements();
+      var lastIndex = elems.length - 1;
 
       if (elems[lastIndex]) {
         self._setSelectedElementId(elems[lastIndex].id);
@@ -639,6 +639,118 @@
     return ListDocumentBase;
   }());
 
+  bitlib.ko.addBindingHandler("bindScrollableY", {
+    init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+      var $container = $(element),
+        $scrollable = $container.children(".bit-ui-scrollable-y").eq(0);
+
+      var spanTotal = 0,
+        colSpans = [];
+
+      var tick = null,
+        scrollableWidth = 0,
+        headerHeight = 0;
+
+      var loopAdjustColumns = function () {
+        var width = $scrollable.get(0).clientWidth;
+
+        if (width !== scrollableWidth) {
+          $scrollable
+            .find("table > thead > tr:first-child")
+            .each(function (i) {
+              $(this)
+                .children("th")
+                .each(function (j) {
+                  var span = colSpans[j] || 1,
+                    colWidth = (width * span / spanTotal);
+
+                  $(this)
+                    .css({
+                      width: colWidth.toFixed(1) + "px"
+                    });
+                });
+
+              var $scrollbarCol = $(this).find(".col-scrollbar"),
+                createNew = !$scrollbarCol.length;
+
+              if (createNew) {
+                $scrollbarCol = $("<th class=\"col-scrollbar\"></th>");
+
+                $(this)
+                  .append($scrollbarCol);
+              }
+
+              var scrollbarWidth = $scrollable.width() - width;
+
+              $scrollbarCol
+                .css({
+                  width: (scrollbarWidth + "px")
+                });
+            });
+        }
+
+        var $tbr = $scrollable.find("table > tbody > tr:first-child");
+        if ($tbr.length === 1 && width !== scrollableWidth) {
+          $tbr
+            .children("td")
+            .each(function (i) {
+              var span = colSpans[i] || 1,
+                colWidth = (width * span / spanTotal);
+
+              $(this)
+                .css({
+                  width: (colWidth.toFixed(1) + "px")
+                });
+            });
+        }
+
+        scrollableWidth = width;
+
+        var height = ($scrollable
+            .find("table > thead > tr:first > th:first-child")
+            .get(0) || document.createElement("div"))
+          .offsetHeight;
+
+        if (height !== headerHeight) {
+          $container
+            .css({
+              paddingTop: (height.toFixed(1) + "px")
+            });
+
+          headerHeight = height;
+        }
+
+        tick = setTimeout(loopAdjustColumns, 100);
+      };
+
+      if ($scrollable) {
+        $scrollable
+          .find("table > thead > tr:first-child > th")
+          .each(function (i) {
+            var spanClass = ($(this)
+                .attr("class") || "span-1x")
+              .match(/span-[0-9d]+x/i);
+
+            if (spanClass) {
+              spanClass = spanClass[0]
+                .replace(/[^0-9d]/ig, "")
+                .replace(/d/ig, ".");
+
+              colSpans[i] = bitlib.common.toNumber(spanClass);
+            }
+
+            if (!colSpans[i] || isNaN(colSpans[i]) || colSpans < 0) {
+              colSpans[i] = 1;
+            }
+
+            spanTotal += colSpans[i];
+          });
+
+        loopAdjustColumns();
+      }
+    }
+  });
+
   BitWeb.ListElementBase = (function () {
     var className = "ListElementBase";
 
@@ -647,7 +759,7 @@
 
       self.isListElementViewModel = true;
 
-      self.id = id || bitlib.common.publishTemporaryUniqueName();
+      self.id = bitlib.string.trim(id) || bitlib.common.publishTemporaryUniqueName();
 
       var isFocused = ko.observable(false);
 

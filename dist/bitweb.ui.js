@@ -3195,7 +3195,7 @@
 
       self = $.extend(self, self.params);
       return self;
-    };
+    }
 
     var _super = BitWeb.SelectUIBase;
     inherits(SelectBoxUI, _super);
