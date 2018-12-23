@@ -24,7 +24,7 @@
       };
 
       self._getAllSources = function () {
-        return bitlib.common.copyDeep(source);
+        return bitlib.common.copy(source);
       };
 
       self._addSource = function (newSource) {
@@ -128,7 +128,7 @@
       };
 
       self._getAllMasters = function () {
-        return bitlib.common.copyDeep(master);
+        return bitlib.common.copy(master);
       };
 
       self._clearMasters = function () {
@@ -169,7 +169,7 @@
           return originalMaster;
         }
 
-        var cloneMaster = bitlib.common.copyDeep(originalMaster);
+        var cloneMaster = bitlib.common.copy(originalMaster);
 
         bitlib.array.each(filterPolicies, function (i, policy) {
           cloneMaster = policy(cloneMaster);
@@ -199,7 +199,7 @@
           return originalMaster;
         }
 
-        var cloneMaster = bitlib.common.copyDeep(originalMaster);
+        var cloneMaster = bitlib.common.copy(originalMaster);
         cloneMaster.sort(sortPolicy);
 
         return cloneMaster;
@@ -374,7 +374,7 @@
       };
 
       self._getAllDatas = function () {
-        return bitlib.common.copyDeep(data);
+        return bitlib.common.copy(data);
       };
 
       self._clearDatas = function () {
@@ -415,7 +415,7 @@
           return originalData;
         }
 
-        var cloneData = bitlib.common.copyDeep(originalData);
+        var cloneData = bitlib.common.copy(originalData);
 
         bitlib.array.each(filterPolicies, function (i, policy) {
           cloneData = policy(cloneData);
@@ -445,7 +445,7 @@
           return originalData;
         }
 
-        var cloneData = bitlib.common.copyDeep(originalData);
+        var cloneData = bitlib.common.copy(originalData);
         cloneData.sort(sortPolicy);
 
         return cloneData;

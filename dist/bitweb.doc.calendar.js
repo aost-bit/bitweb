@@ -279,7 +279,7 @@
             self._get = function (styleCode) {
                 if (styleCode) {
                     if (container[styleCode]) {
-                        return bitlib.common.copyDeep(container[styleCode]);
+                        return bitlib.common.copy(container[styleCode]);
                     }
 
                     bitlib.logger.warn("CalendarStyleContainer に登録されていない styleCode[" + styleCode + "] を検索しました.");

@@ -211,7 +211,7 @@
       var policies = [];
 
       self._getAllPolicies = function () {
-        return bitlib.common.copyDeep(policies);
+        return bitlib.common.copy(policies);
       };
 
       self._addPolicy = function (newPolicies) {
@@ -305,7 +305,7 @@
 
 
       self._getAllSources = function () {
-        return bitlib.common.copyDeep(sources);
+        return bitlib.common.copy(sources);
       };
 
       self._setSources = function (sourceId) {
@@ -326,7 +326,7 @@
       var destinations = [];
 
       self._getAllDestinations = function () {
-        return bitlib.common.copyDeep(destinations);
+        return bitlib.common.copy(destinations);
       };
 
       self._setDestinations = function (destinationId) {
@@ -446,7 +446,7 @@
       var sources = [];
 
       self._getAllSources = function () {
-        return bitlib.common.copyDeep(sources);
+        return bitlib.common.copy(sources);
       };
 
       self._setSources = function (sourceId) {
@@ -467,7 +467,7 @@
       var destinations = [];
 
       self._getAllDestinations = function () {
-        return bitlib.common.copyDeep(destinations);
+        return bitlib.common.copy(destinations);
       };
 
       self._setDestinations = function (destinationId) {
@@ -937,7 +937,7 @@
       var sources = [];
 
       self._getAllSources = function () {
-        return bitlib.common.copyDeep(sources);
+        return bitlib.common.copy(sources);
       };
 
       self._setSources = function (sourceId) {
@@ -958,7 +958,7 @@
       var destinations = [];
 
       self._getAllDestinations = function () {
-        return bitlib.common.copyDeep(destinations);
+        return bitlib.common.copy(destinations);
       };
 
       self._setDestinations = function (destinationId) {
@@ -1068,7 +1068,7 @@
       var sources = [];
 
       self._getAllSources = function () {
-        return bitlib.common.copyDeep(sources);
+        return bitlib.common.copy(sources);
       };
 
       self._setSources = function (sourceId) {
@@ -1089,7 +1089,7 @@
       var destinations = [];
 
       self._getAllDestinations = function () {
-        return bitlib.common.copyDeep(destinations);
+        return bitlib.common.copy(destinations);
       };
 
       self._setDestinations = function (destinationId) {

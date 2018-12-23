@@ -704,7 +704,7 @@
       bitlib.params.page.saveSessionQuery();
 
       var windowName = self._publishWindowName();
-      options = $.extend(bitlib.common.copyDeep(windowOptions), (options || {}));
+      options = $.extend(bitlib.common.copy(windowOptions), (options || {}));
 
       var fullUrl = concatQueries(url, self._cloneQueries());
       if (fullUrl) {

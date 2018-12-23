@@ -17,7 +17,7 @@
       var serviceProxy = {};
 
       self._getProxy = function () {
-        return bitlib.common.copyDeep(serviceProxy);
+        return bitlib.common.copy(serviceProxy);
       };
 
       self._setProxy = function (newService, message) {
@@ -207,7 +207,7 @@
       var dispatcherProxies = [];
 
       self._getAllDispatcherProxies = function () {
-        return bitlib.common.copyDeep(dispatcherProxies);
+        return bitlib.common.copy(dispatcherProxies);
       };
 
       self._addDispatcherProxy = function (newDispatcher, options, disconnectHandler) {

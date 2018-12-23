@@ -39,7 +39,7 @@
       self.isUIViewModel = true;
 
       self.params = $.extend({
-        readOnly: false,
+        // readOnly: false,
         copyable: true
       }, self.params);
 
@@ -270,7 +270,7 @@
 
       var data = source[self.name];
       if (data) {
-        self.readData(bitlib.common.copyDeep(data));
+        self.readData(bitlib.common.copy(data));
       }
 
       return self;
@@ -921,7 +921,7 @@
           options = [options];
         }
 
-        self.params.optionsOriginal = bitlib.common.copyDeep(options);
+        self.params.optionsOriginal = bitlib.common.copy(options);
         delete self.params.options;
       }
 
@@ -1015,7 +1015,7 @@
       var self = this;
 
       var uvm = new BitWeb.SelectBoxUI(self.caption, {
-        options: bitlib.common.copyDeep(self.options())
+        options: bitlib.common.copy(self.options())
       });
 
       var callback = function (rvm) {
@@ -1065,7 +1065,7 @@
       var self = this;
 
       var uvm = new BitWeb.SelectBoxUI(self.caption, {
-        options: bitlib.common.copyDeep(self.options())
+        options: bitlib.common.copy(self.options())
       });
 
       var callback = function (rvm) {
@@ -1147,7 +1147,7 @@
 
       var uvm = new OptionCollector(self.caption, {
         delimiter: self.optionDelimiter,
-        options: bitlib.common.copyDeep(self.options())
+        options: bitlib.common.copy(self.options())
       });
 
       var callback = function (rvm) {
@@ -2944,7 +2944,7 @@
           });
         }
 
-        self.params.optionsOriginal = bitlib.common.copyDeep(self.params.options);
+        self.params.optionsOriginal = bitlib.common.copy(self.params.options);
         delete self.params.options;
       }
 
@@ -3380,10 +3380,6 @@
       var options = self.options(),
         results = _super.prototype.getUIByName.call(this, names);
 
-      bitlib.array.each(options, function (i, opt) {
-        results = results.concat(opt.getUIByName(names));
-      });
-
       if (!!self.name || options.length === 0) {
         return results;
       }
@@ -3672,7 +3668,7 @@
     var className = "RadioButtonDialogUI";
 
     function RadioButtonDialogUI() {
-      var self = BitWeb.CheckBoxUI.apply(this, arguments);
+      var self = BitWeb.RadioButtonUI.apply(this, arguments);
 
       self.type = className;
 
@@ -3682,7 +3678,7 @@
       return self;
     }
 
-    var _super = BitWeb.CheckBoxUI;
+    var _super = BitWeb.RadioButtonUI;
     inherits(RadioButtonDialogUI, _super);
 
     RadioButtonDialogUI.prototype.openPicker = function () {
@@ -3870,7 +3866,7 @@
       self.availableElements = ko.pureComputed(function () {
         var results = [];
 
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           if (elem.isAvailable()) {
             results.push(elem);
           }
@@ -3882,7 +3878,7 @@
       self.validElements = ko.pureComputed(function () {
         var results = [];
 
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           if (elem.isValid()) {
             results.push(elem);
           }
@@ -3894,7 +3890,7 @@
       self.visibleElements = ko.pureComputed(function () {
         var results = [];
 
-        bitlib.array.each(elements, function (i, elem) {
+        bitlib.array.each(self.elements, function (i, elem) {
           if (elem.isVisible()) {
             results.push(elem);
           }
@@ -4022,7 +4018,7 @@
       }, self);
 
       self.isValid = ko.pureComputed(function () {
-        var isValid = bitlib.array.any(elements, function (i, elem) {
+        var isValid = bitlib.array.any(self.elements, function (i, elem) {
           return elem.isValid();
         });
         return isValid;
@@ -4271,7 +4267,9 @@
           return self;
         }
 
-        var prevElem, nextElem;
+        var prevElem,
+          nextElem;
+
         bitlib.array.each(elements, function (i, elem) {
           if (elem.id === prevId) {
             prevElem = elem;
@@ -4279,6 +4277,7 @@
           if (elem.id === nextId) {
             nextElem = elem;
           }
+
           return (!prevElem || !nextElem);
         });
 
@@ -4627,7 +4626,7 @@
           if (arr[i]) {
             var params = $.extend(true, {
               forbiddenKeys: [self.valueDelimiter]
-            }, bitlib.common.copyDeep(self.textUIParams));
+            }, bitlib.common.copy(self.textUIParams));
 
             var elem = new BitWeb.TextListUIElement(params);
             elem.value(arr[i]);

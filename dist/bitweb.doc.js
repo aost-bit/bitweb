@@ -53,7 +53,7 @@
       self._get = function (styleCode) {
         if (styleCode) {
           if (container[styleCode]) {
-            return bitlib.common.copyDeep(container[styleCode]);
+            return bitlib.common.copy(container[styleCode]);
           }
 
           bitlib.logger.warn("TemplateStyleContainer に登録されていない styleCode[" + styleCode + "] を検索しました.");
@@ -117,7 +117,7 @@
       MetricsBase.prototype._singletonInstance = self;
 
       if (params) {
-        params = bitlib.common.copyDeep(params);
+        params = bitlib.common.copy(params);
       }
 
       self.params = $.extend(true, {
