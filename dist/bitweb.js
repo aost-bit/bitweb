@@ -1,7 +1,7 @@
-﻿(function (globals) {
-  "use strict";
+﻿(function(globals) {
+    "use strict";
 
-  // for namespace 'BitWeb' defined.
-  globals.BitWeb = $.extend({}, (globals.bitwebExtensions || {}));
+    // for namespace 'BitWeb' defined.
+    globals.BitWeb = $.extend({}, (globals.bitwebExtensions || {}));
 
 }(this));

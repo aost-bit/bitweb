@@ -1,21 +1,21 @@
 {
-  "name": "bitweb",
-  "version": "2.0.0",
-  "homepage": "https://github.com/aost-bit/bitweb",
-  "authors": [
-    "Satoru AOYAMA <aost.bit@gmail.com>"
-  ],
-  "description": "",
-  "main": "dist/bitweb.js",
-  "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
-  "dependencies": {
-    "bitlib": "https://github.com/aost-bit/bitlib.git"
-  }
+    "name": "bitweb",
+    "version": "2.1.0",
+    "homepage": "https://github.com/aost-bit/bitweb",
+    "authors": [
+        "Satoru AOYAMA <aost.bit@gmail.com>"
+    ],
+    "description": "",
+    "main": "dist/bitweb.js",
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "bitlib": "https://github.com/aost-bit/bitlib.git"
+    }
 }

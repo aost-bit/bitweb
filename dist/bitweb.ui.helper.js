@@ -1,1260 +1,1260 @@
-(function (BitWeb) {
-  "use strict";
-
-  BitWeb.UIMapper = (function () {
-    var className = "UIMapper";
-
-    function UIMapper() {
-      // singleton
-      if (UIMapper.prototype._singletonInstance) {
-        return UIMapper.prototype._singletonInstance;
-      }
-      var self = this;
-      UIMapper.prototype._singletonInstance = self;
-
-      var interfaces = ko.observableArray();
-
-      self.interfaces = ko.pureComputed(function () {
-        return interfaces();
-      }, self);
-
-      var interfacesMap = {};
-
-      self._get = function (name) {
-        if (!name || !bitlib.common.isString(name)) {
-          return [];
-        }
-
-        if (interfacesMap[name]) {
-          return interfacesMap[name]; // shallow copy
-        }
-
-        var results = [];
-        bitlib.array.each(interfaces, function (i, itf) {
-          results = results.concat(itf.getUIByName(name));
-        });
-
-        interfacesMap[name] = results;
-
-        return results;
-      };
-
-      self._add = function (itfs) {
-        itfs = itfs || [];
-        itfs = bitlib.common.isArray(itfs) ? itfs : [itfs];
-
-        itfs = bitlib.array.removeNullOrUndefined(itfs);
-
-        if (itfs.length === 0) {
-          return self;
-        }
-
-        var indicator = function (uivm) {
-          if (!uivm.name) {
-            return uivm;
-          }
-
-          if (!interfacesMap[uivm.name]) {
-            interfacesMap[uivm.name] = [];
-          }
-
-          interfacesMap[uivm.name].push(uivm);
-
-          return uivm;
-        };
-
-        bitlib.array.each(itfs, function (i, itf) {
-          itf.command(indicator);
-        });
-
-        interfaces.push.apply(interfaces, itfs);
-
-        return self;
-      };
-
-      var hiddenInterfaces = [];
-
-      self._applyHideAll = function () {
-        if (0 < hiddenInterfaces.length) {
-          return self;
-        }
-
-        var indicator = function (uivm) {
-          if (!uivm.isVisible()) {
-            return uivm;
-          }
-
-          uivm.hide();
-          hiddenInterfaces.push(uivm);
-
-          return uivm;
-        };
-
-        bitlib.array.each(interfaces, function (i, itf) {
-          itf.command(indicator);
-        });
-
-        return self;
-      };
-
-      self._applyShowAll = function () {
-        if (hiddenInterfaces.length === 0) {
-          return self;
-        }
-
-        bitlib.array.each(hiddenInterfaces, function (i, itf) {
-          itf.show();
-        });
-
-        hiddenInterfaces = [];
-
-        return self;
-      };
-
-      self._applyShowAllAsynchronously = function (interval) {
-        var defer = $.Deferred();
-
-        if (hiddenInterfaces.length === 0) {
-          return defer.resolve().promise();
-        }
-
-        if (!bitlib.common.isNumber(interval) || interval < 100) {
-          interval = 100;
-        }
-
-        var promise = bitlib.array.eachTimeout(hiddenInterfaces, function (i, itf) {
-          itf.show();
-        }, interval);
-
-        promise
-          .done(function () {
-            hiddenInterfaces = [];
-
-            defer.resolve();
-          });
-
-        return defer.promise();
-      };
-
-      return self;
-    }
-
-    UIMapper.prototype.get = function (name) {
-      return this._get(name);
-    };
-
-    UIMapper.prototype.fget = function (name) {
-      return this._get(name)[0] || {};
-    };
-
-    UIMapper.prototype.add = function (uivm) {
-      this._add(uivm);
-      return this;
-    };
-
-    UIMapper.prototype.resetAll = function () {
-      var self = this;
-
-      bitlib.array.each(self.interfaces, function (i, itf) {
-        itf.reset();
-      });
-
-      return self;
-    };
-
-    UIMapper.prototype.clearAll = function () {
-      var self = this;
-
-      bitlib.array.each(self.interfaces, function (i, itf) {
-        itf.clear();
-      });
-
-      return self;
-    };
-
-    UIMapper.prototype.hideAll = function () {
-      this._applyHideAll();
-      return this;
-    };
-
-    UIMapper.prototype.showAll = function () {
-      this._applyShowAll();
-      return this;
-    };
-
-    UIMapper.prototype.showAllAsynchronously = function (interval) {
-      return this._applyShowAllAsynchronously(interval);
-    };
-
-    UIMapper.getClassName = function () {
-      return className;
-    };
-
-    return UIMapper;
-  }());
-
-  BitWeb.UIValidator = (function () {
-    var className = "UIValidator";
-
-    function UIValidator() {
-      if (!(this instanceof UIValidator)) {
-        return new UIValidator();
-      }
-
-      // singleton
-      if (UIValidator.prototype._singletonInstance) {
-        return UIValidator.prototype._singletonInstance;
-      }
-      var self = this;
-      UIValidator.prototype._singletonInstance = self;
-
-      var policies = [];
-
-      self._getAllPolicies = function () {
-        return bitlib.common.copy(policies);
-      };
-
-      self._addPolicy = function (newPolicies) {
-        newPolicies = newPolicies || [];
-        newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
-
-        newPolicies = bitlib.array.removeNullOrUndefined(newPolicies);
-
-        if (newPolicies.length === 0) {
-          return self;
-        }
-
-        for (var i = 0, len = newPolicies.length; i < len; i++) {
-          if (bitlib.common.isFunction(newPolicies[i])) {
-            policies.push(newPolicies[i]);
-          }
-        }
-
-        return self;
-      };
-
-      self._clearPolicies = function () {
-        policies = [];
-        return self;
-      };
-
-      return self;
-    }
-
-    UIValidator.prototype.addPolicy = function (policy) {
-      this._addPolicy(policy);
-      return this;
-    };
-
-    UIValidator.prototype.clear = function () {
-      this._clearPolicies();
-      return this;
-    };
-
-    UIValidator.prototype.validate = function () {
-      var self = this;
-
-      var policies = self._getAllPolicies();
-
-      if (policies.length === 0) {
-        return true;
-      }
-
-      try {
-        for (var i = 0, len = policies.length; i < len; i++) {
-          if (!policies[i].apply(self, arguments)) {
-            return false;
-          }
-        }
-      } catch (err) {
-        bitlib.logger.error(err);
-      }
-
-      return true;
-    };
-
-    UIValidator.getClassName = function () {
-      return className;
-    };
-
-    return UIValidator;
-  }());
-
-  BitWeb.UIDisplayer = (function () {
-    var className = "UIDisplayer";
-
-    function UIDisplayer() {
-      if (!(this instanceof UIDisplayer)) {
-        return new UIDisplayer();
-      }
-
-      // singleton
-      if (UIDisplayer.prototype._singletonInstance) {
-        var instance = UIDisplayer.prototype._singletonInstance;
-
-        instance._reset();
-
-        return UIDisplayer.prototype._singletonInstance;
-      }
-      var self = this;
-      UIDisplayer.prototype._singletonInstance = self;
-
-      var mapper = new BitWeb.UIMapper();
-
-      var sources = [];
-
-
-      self._getAllSources = function () {
-        return bitlib.common.copy(sources);
-      };
-
-      self._setSources = function (sourceId) {
-        if (!sourceId || !bitlib.common.isString(sourceId)) {
-          return self;
-        }
-
-        sources = mapper.get(sourceId);
-
-        return self;
-      };
-
-      self._clearSources = function () {
-        sources = [];
-        return self;
-      };
-
-      var destinations = [];
-
-      self._getAllDestinations = function () {
-        return bitlib.common.copy(destinations);
-      };
-
-      self._setDestinations = function (destinationId) {
-        if (!destinationId || !bitlib.common.isString(destinationId)) {
-          return self;
-        }
-
-        destinations = mapper.get(destinationId);
-
-        return self;
-      };
-
-      self._clearDestinations = function () {
-        destinations = [];
-        return self;
-      };
-
-      self._reset = function () {
-        sources = [], destinations = [];
-        return self;
-      };
-
-      return self;
-    }
-
-    UIDisplayer.prototype.setSources = function (sourceId) {
-      this._setSources(sourceId);
-      return this;
-    };
-
-    // Alias
-    UIDisplayer.prototype.from = UIDisplayer.prototype.setSources;
-
-    UIDisplayer.prototype.setDestinations = function (destinationId) {
-      this._setSources(destinationId);
-      return this;
-    };
-
-    // Alias
-    UIDisplayer.prototype.to = UIDisplayer.prototype.setDestinations;
-
-    UIDisplayer.prototype.applyVisibility = function (policy) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      policy = policy || function (sval) {
-        return !!sval;
-      };
-
-      var visibilityHandler = function (isVisible) {
-        isVisible = !!isVisible;
-
-        bitlib.array.each(destinations, function (index, destination) {
-          if (isVisible) {
-            destination.show();
-          } else {
-            if (!destination.isValid()) {
-              destination.hide();
+(function(BitWeb) {
+    "use strict";
+
+    BitWeb.UIMapper = (function() {
+        var className = "UIMapper";
+
+        function UIMapper() {
+            // singleton
+            if (UIMapper.prototype._singletonInstance) {
+                return UIMapper.prototype._singletonInstance;
             }
-          }
-        });
+            var self = this;
+            UIMapper.prototype._singletonInstance = self;
 
-        return true;
-      };
+            var interfaces = ko.observableArray();
 
-      try {
-        for (var i = 0, len = sources.length; i < len; i++) {
-          sources[i].value.subscribe(function (newValue) {
-            visibilityHandler(policy(newValue));
-          });
+            self.interfaces = ko.pureComputed(function() {
+                return interfaces();
+            }, self);
 
-          visibilityHandler(policy(sources[i].value()));
-        }
-      } catch (err) {
-        bitlib.logger.error(err);
-      }
+            var interfacesMap = {};
 
-      return self;
-    };
+            self._get = function(name) {
+                if (!name || !bitlib.common.isString(name)) {
+                    return [];
+                }
 
-    UIDisplayer.getClassName = function () {
-      return className;
-    };
+                if (interfacesMap[name]) {
+                    return interfacesMap[name]; // shallow copy
+                }
 
-    return UIDisplayer;
-  }());
+                var results = [];
+                bitlib.array.each(interfaces, function(i, itf) {
+                    results = results.concat(itf.getUIByName(name));
+                });
 
-  BitWeb.UIValueCopier = (function () {
-    var className = "UIValueCopier";
+                interfacesMap[name] = results;
 
-    var defaultDelimiter = "\n";
+                return results;
+            };
 
-    function UIValueCopier() {
-      if (!(this instanceof UIValueCopier)) {
-        return new UIValueCopier();
-      }
+            self._add = function(itfs) {
+                itfs = itfs || [];
+                itfs = bitlib.common.isArray(itfs) ? itfs : [itfs];
 
-      // singleton
-      if (UIValueCopier.prototype._singletonInstance) {
-        var instance = UIValueCopier.prototype._singletonInstance;
+                itfs = bitlib.array.removeNullOrUndefined(itfs);
 
-        instance._reset();
+                if (itfs.length === 0) {
+                    return self;
+                }
 
-        return UIValueCopier.prototype._singletonInstance;
-      }
-      var self = this;
-      UIValueCopier.prototype._singletonInstance = self;
+                var indicator = function(uivm) {
+                    if (!uivm.name) {
+                        return uivm;
+                    }
 
-      var mapper = new BitWeb.UIMapper();
+                    if (!interfacesMap[uivm.name]) {
+                        interfacesMap[uivm.name] = [];
+                    }
 
-      var sources = [];
+                    interfacesMap[uivm.name].push(uivm);
 
-      self._getAllSources = function () {
-        return bitlib.common.copy(sources);
-      };
+                    return uivm;
+                };
 
-      self._setSources = function (sourceId) {
-        if (!sourceId || !bitlib.common.isString(sourceId)) {
-          return self;
-        }
+                bitlib.array.each(itfs, function(i, itf) {
+                    itf.command(indicator);
+                });
 
-        sources = mapper.get(sourceId);
+                interfaces.push.apply(interfaces, itfs);
 
-        return self;
-      };
+                return self;
+            };
 
-      self._clearSources = function () {
-        sources = [];
-        return self;
-      };
+            var hiddenInterfaces = [];
 
-      var destinations = [];
+            self._applyHideAll = function() {
+                if (0 < hiddenInterfaces.length) {
+                    return self;
+                }
 
-      self._getAllDestinations = function () {
-        return bitlib.common.copy(destinations);
-      };
+                var indicator = function(uivm) {
+                    if (!uivm.isVisible()) {
+                        return uivm;
+                    }
 
-      self._setDestinations = function (destinationId) {
-        if (!destinationId || !bitlib.common.isString(destinationId)) {
-          return self;
-        }
+                    uivm.hide();
+                    hiddenInterfaces.push(uivm);
 
-        destinations = mapper.get(destinationId);
+                    return uivm;
+                };
 
-        return self;
-      };
+                bitlib.array.each(interfaces, function(i, itf) {
+                    itf.command(indicator);
+                });
 
-      self._clearDestinations = function () {
-        destinations = [];
-        return self;
-      };
+                return self;
+            };
 
-      var delimiter = defaultDelimiter;
+            self._applyShowAll = function() {
+                if (hiddenInterfaces.length === 0) {
+                    return self;
+                }
 
-      self._getDelimiter = function () {
-        return delimiter;
-      };
+                bitlib.array.each(hiddenInterfaces, function(i, itf) {
+                    itf.show();
+                });
 
-      self._setDelimiter = function (newDelimiter) {
-        if (!bitlib.common.isString(newDelimiter)) {
-          return self;
-        }
+                hiddenInterfaces = [];
 
-        delimiter = newDelimiter;
+                return self;
+            };
 
-        return self;
-      };
+            self._applyShowAllAsynchronously = function(interval) {
+                var defer = $.Deferred();
 
-      self._resetDelimiter = function () {
-        delimiter = defaultDelimiter;
-        return self;
-      };
+                if (hiddenInterfaces.length === 0) {
+                    return defer.resolve().promise();
+                }
 
-      self._reset = function () {
-        sources = [], destinations = [];
+                if (!bitlib.common.isNumber(interval) || interval < 100) {
+                    interval = 100;
+                }
 
-        self._resetDelimiter();
+                var promise = bitlib.array.eachTimeout(hiddenInterfaces, function(i, itf) {
+                    itf.show();
+                }, interval);
 
-        return self;
-      };
+                promise
+                    .done(function() {
+                        hiddenInterfaces = [];
 
-      return self;
-    }
+                        defer.resolve();
+                    });
 
-    UIValueCopier.prototype.setSources = function (sourceId) {
-      this._setSources(sourceId);
-      return this;
-    };
+                return defer.promise();
+            };
 
-    // Alias
-    UIValueCopier.prototype.from = UIValueCopier.prototype.setSources;
-
-    UIValueCopier.prototype.setDestinations = function (destinationId) {
-      this._setSources(destinationId);
-      return this;
-    };
-
-    // Alias
-    UIValueCopier.prototype.to = UIValueCopier.prototype.setDestinations;
-
-    UIValueCopier.prototype.resetDelimiter = function () {
-      this._resetDelimiter();
-      return this;
-    };
-
-    UIValueCopier.prototype.copyValue = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].value());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable() && !destinations[i].isValid()) {
-          if (validator(destinations[i], val)) {
-            destinations[i].value(val);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.prototype.joinValue = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].value());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable()) {
-          if (validator(destinations[i], val)) {
-            var dval = (destinations[i].isValid() ? (destinations[i].value() + self._getDelimiter()) : "") + val;
-            destinations[i].value(dval);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.prototype.overwriteValue = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].value());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable()) {
-          if (validator(destinations[i], val)) {
-            destinations[i].value(val);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.prototype.copyOutput = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].output());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable() && !destinations[i].isValid()) {
-          if (validator(destinations[i], val)) {
-            destinations[i].value(val);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.prototype.joinOutput = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].output());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable()) {
-          if (validator(destinations[i], val)) {
-            var dval = (destinations[i].isValid() ? (destinations[i].value() + self._getDelimiter()) : "") + val;
-            destinations[i].value(dval);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.prototype.overwriteOutput = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].output());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable()) {
-          if (validator(destinations[i], val)) {
-            destinations[i].value(val);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.prototype.copyText = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].toText());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable() && !destinations[i].isValid()) {
-          if (validator(destinations[i], val)) {
-            destinations[i].value(val);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.prototype.joinText = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].toText());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable()) {
-          if (validator(destinations[i], val)) {
-            var dval = (destinations[i].isValid() ? (destinations[i].value() + self._getDelimiter()) : "") + val;
-            destinations[i].value(dval);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.prototype.overwriteText = function (validator) {
-      var self = this;
-
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
-
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
-
-      var i = 0,
-        len = 0;
-
-      var valArr = [];
-      for (i = 0, len = sources.length; i < len; i++) {
-        if (sources[i].isValid()) {
-          valArr.push(sources[i].toText());
-        }
-      }
-
-      if (valArr.length === 0) {
-        return self;
-      }
-
-      var val = valArr.join(self._getDelimiter());
-
-      validator = validator || function (destination, sval) {
-        return true;
-      };
-
-      for (i = 0, len = destinations.length; i < len; i++) {
-        if (destinations[i].isWritable()) {
-          if (validator(destinations[i], val)) {
-            destinations[i].value(val);
-          }
-        }
-      }
-
-      return self;
-    };
-
-    UIValueCopier.getClassName = function () {
-      return className;
-    };
-
-    return UIValueCopier;
-  }());
-
-  BitWeb.UIValueReflector = (function () {
-    var className = "UIValueReflector";
-
-    function UIValueReflector() {
-      if (!(this instanceof UIValueReflector)) {
-        return new UIValueReflector();
-      }
-
-      // singleton
-      if (UIValueReflector.prototype._singletonInstance) {
-        return UIValueReflector.prototype._singletonInstance;
-      }
-      var self = this;
-      UIValueReflector.prototype._singletonInstance = self;
-
-      var mapper = new BitWeb.UIMapper();
-
-      var sources = [];
-
-      self._getAllSources = function () {
-        return bitlib.common.copy(sources);
-      };
-
-      self._setSources = function (sourceId) {
-        if (!sourceId || !bitlib.common.isString(sourceId)) {
-          return self;
+            return self;
         }
 
-        sources = mapper.get(sourceId);
+        UIMapper.prototype.get = function(name) {
+            return this._get(name);
+        };
 
-        return self;
-      };
+        UIMapper.prototype.fget = function(name) {
+            return this._get(name)[0] || {};
+        };
 
-      self._clearSources = function () {
-        sources = [];
-        return self;
-      };
+        UIMapper.prototype.add = function(uivm) {
+            this._add(uivm);
+            return this;
+        };
 
-      var destinations = [];
+        UIMapper.prototype.resetAll = function() {
+            var self = this;
 
-      self._getAllDestinations = function () {
-        return bitlib.common.copy(destinations);
-      };
+            bitlib.array.each(self.interfaces, function(i, itf) {
+                itf.reset();
+            });
 
-      self._setDestinations = function (destinationId) {
-        if (!destinationId || !bitlib.common.isString(destinationId)) {
-          return self;
+            return self;
+        };
+
+        UIMapper.prototype.clearAll = function() {
+            var self = this;
+
+            bitlib.array.each(self.interfaces, function(i, itf) {
+                itf.clear();
+            });
+
+            return self;
+        };
+
+        UIMapper.prototype.hideAll = function() {
+            this._applyHideAll();
+            return this;
+        };
+
+        UIMapper.prototype.showAll = function() {
+            this._applyShowAll();
+            return this;
+        };
+
+        UIMapper.prototype.showAllAsynchronously = function(interval) {
+            return this._applyShowAllAsynchronously(interval);
+        };
+
+        UIMapper.getClassName = function() {
+            return className;
+        };
+
+        return UIMapper;
+    }());
+
+    BitWeb.UIValidator = (function() {
+        var className = "UIValidator";
+
+        function UIValidator() {
+            if (!(this instanceof UIValidator)) {
+                return new UIValidator();
+            }
+
+            // singleton
+            if (UIValidator.prototype._singletonInstance) {
+                return UIValidator.prototype._singletonInstance;
+            }
+            var self = this;
+            UIValidator.prototype._singletonInstance = self;
+
+            var policies = [];
+
+            self._getAllPolicies = function() {
+                return bitlib.common.copy(policies);
+            };
+
+            self._addPolicy = function(newPolicies) {
+                newPolicies = newPolicies || [];
+                newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
+
+                newPolicies = bitlib.array.removeNullOrUndefined(newPolicies);
+
+                if (newPolicies.length === 0) {
+                    return self;
+                }
+
+                for (var i = 0, len = newPolicies.length; i < len; i++) {
+                    if (bitlib.common.isFunction(newPolicies[i])) {
+                        policies.push(newPolicies[i]);
+                    }
+                }
+
+                return self;
+            };
+
+            self._clearPolicies = function() {
+                policies = [];
+                return self;
+            };
+
+            return self;
         }
 
-        destinations = mapper.get(destinationId);
+        UIValidator.prototype.addPolicy = function(policy) {
+            this._addPolicy(policy);
+            return this;
+        };
 
-        return self;
-      };
+        UIValidator.prototype.clear = function() {
+            this._clearPolicies();
+            return this;
+        };
 
-      self._clearDestinations = function () {
-        destinations = [];
-        return self;
-      };
+        UIValidator.prototype.validate = function() {
+            var self = this;
 
-      self._reset = function () {
-        sources = [], destinations = [];
-        return self;
-      };
+            var policies = self._getAllPolicies();
 
-      return self;
-    }
+            if (policies.length === 0) {
+                return true;
+            }
 
-    UIValueReflector.prototype.setSources = function (sourceId) {
-      this._setSources(sourceId);
-      return this;
-    };
+            try {
+                for (var i = 0, len = policies.length; i < len; i++) {
+                    if (!policies[i].apply(self, arguments)) {
+                        return false;
+                    }
+                }
+            } catch (err) {
+                bitlib.logger.error(err);
+            }
 
-    // Alias
-    UIValueReflector.prototype.from = UIValueReflector.prototype.setSources;
+            return true;
+        };
 
-    UIValueReflector.prototype.setDestinations = function (destinationId) {
-      this._setSources(destinationId);
-      return this;
-    };
+        UIValidator.getClassName = function() {
+            return className;
+        };
 
-    // Alias
-    UIValueReflector.prototype.to = UIValueReflector.prototype.setDestinations;
+        return UIValidator;
+    }());
 
-    UIValueReflector.prototype.applyValueReflection = function (converter) {
-      var self = this;
+    BitWeb.UIDisplayer = (function() {
+        var className = "UIDisplayer";
 
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
+        function UIDisplayer() {
+            if (!(this instanceof UIDisplayer)) {
+                return new UIDisplayer();
+            }
 
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
+            // singleton
+            if (UIDisplayer.prototype._singletonInstance) {
+                var instance = UIDisplayer.prototype._singletonInstance;
 
-      converter = converter || function (sval) {
-        return sval;
-      };
+                instance._reset();
 
-      var reflectionHandler = function (val) {
-        if (!bitlib.common.isString(val)) {
-          return false;
+                return UIDisplayer.prototype._singletonInstance;
+            }
+            var self = this;
+            UIDisplayer.prototype._singletonInstance = self;
+
+            var mapper = new BitWeb.UIMapper();
+
+            var sources = [];
+
+
+            self._getAllSources = function() {
+                return bitlib.common.copy(sources);
+            };
+
+            self._setSources = function(sourceId) {
+                if (!sourceId || !bitlib.common.isString(sourceId)) {
+                    return self;
+                }
+
+                sources = mapper.get(sourceId);
+
+                return self;
+            };
+
+            self._clearSources = function() {
+                sources = [];
+                return self;
+            };
+
+            var destinations = [];
+
+            self._getAllDestinations = function() {
+                return bitlib.common.copy(destinations);
+            };
+
+            self._setDestinations = function(destinationId) {
+                if (!destinationId || !bitlib.common.isString(destinationId)) {
+                    return self;
+                }
+
+                destinations = mapper.get(destinationId);
+
+                return self;
+            };
+
+            self._clearDestinations = function() {
+                destinations = [];
+                return self;
+            };
+
+            self._reset = function() {
+                sources = [], destinations = [];
+                return self;
+            };
+
+            return self;
         }
 
-        bitlib.array.each(destinations, function (index, destination) {
-          destination.value(val);
-        });
+        UIDisplayer.prototype.setSources = function(sourceId) {
+            this._setSources(sourceId);
+            return this;
+        };
 
-        return true;
-      };
+        // Alias
+        UIDisplayer.prototype.from = UIDisplayer.prototype.setSources;
 
-      try {
-        for (var i = 0, len = sources.length; i < len; i++) {
-          sources[i].value.subscribe(function (newValue) {
-            reflectionHandler(converter(newValue));
-          });
+        UIDisplayer.prototype.setDestinations = function(destinationId) {
+            this._setSources(destinationId);
+            return this;
+        };
 
-          reflectionHandler(converter(sources[i].value()));
-        }
-      } catch (err) {
-        bitlib.logger.error(err);
-      }
+        // Alias
+        UIDisplayer.prototype.to = UIDisplayer.prototype.setDestinations;
 
-      return self;
-    };
+        UIDisplayer.prototype.applyVisibility = function(policy) {
+            var self = this;
 
-    UIValueReflector.getClassName = function () {
-      return className;
-    };
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
 
-    return UIValueReflector;
-  }());
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
 
-  BitWeb.UIValueTransmitter = (function () {
-    var className = "UIValueTransmitter";
+            policy = policy || function(sval) {
+                return !!sval;
+            };
 
-    function UIValueTransmitter() {
-      if (!(this instanceof UIValueTransmitter)) {
-        return new UIValueTransmitter();
-      }
+            var visibilityHandler = function(isVisible) {
+                isVisible = !!isVisible;
 
-      // singleton
-      if (UIValueTransmitter.prototype._singletonInstance) {
-        return UIValueTransmitter.prototype._singletonInstance;
-      }
-      var self = this;
-      UIValueTransmitter.prototype._singletonInstance = self;
+                bitlib.array.each(destinations, function(index, destination) {
+                    if (isVisible) {
+                        destination.show();
+                    } else {
+                        if (!destination.isValid()) {
+                            destination.hide();
+                        }
+                    }
+                });
 
-      var mapper = new BitWeb.UIMapper();
+                return true;
+            };
 
-      var sources = [];
+            try {
+                for (var i = 0, len = sources.length; i < len; i++) {
+                    sources[i].value.subscribe(function(newValue) {
+                        visibilityHandler(policy(newValue));
+                    });
 
-      self._getAllSources = function () {
-        return bitlib.common.copy(sources);
-      };
+                    visibilityHandler(policy(sources[i].value()));
+                }
+            } catch (err) {
+                bitlib.logger.error(err);
+            }
 
-      self._setSources = function (sourceId) {
-        if (!sourceId || !bitlib.common.isString(sourceId)) {
-          return self;
-        }
+            return self;
+        };
 
-        sources = mapper.get(sourceId);
+        UIDisplayer.getClassName = function() {
+            return className;
+        };
 
-        return self;
-      };
+        return UIDisplayer;
+    }());
 
-      self._clearSources = function () {
-        sources = [];
-        return self;
-      };
+    BitWeb.UIValueCopier = (function() {
+        var className = "UIValueCopier";
 
-      var destinations = [];
+        var defaultDelimiter = "\n";
 
-      self._getAllDestinations = function () {
-        return bitlib.common.copy(destinations);
-      };
+        function UIValueCopier() {
+            if (!(this instanceof UIValueCopier)) {
+                return new UIValueCopier();
+            }
 
-      self._setDestinations = function (destinationId) {
-        if (!destinationId || !bitlib.common.isString(destinationId)) {
-          return self;
-        }
+            // singleton
+            if (UIValueCopier.prototype._singletonInstance) {
+                var instance = UIValueCopier.prototype._singletonInstance;
 
-        destinations = mapper.get(destinationId);
+                instance._reset();
 
-        return self;
-      };
+                return UIValueCopier.prototype._singletonInstance;
+            }
+            var self = this;
+            UIValueCopier.prototype._singletonInstance = self;
 
-      self._clearDestinations = function () {
-        destinations = [];
-        return self;
-      };
+            var mapper = new BitWeb.UIMapper();
 
-      self._reset = function () {
-        sources = [], destinations = [];
-        return self;
-      };
+            var sources = [];
 
-      return self;
-    }
+            self._getAllSources = function() {
+                return bitlib.common.copy(sources);
+            };
 
-    UIValueTransmitter.prototype.setSources = function (sourceId) {
-      this._setSources(sourceId);
-      return this;
-    };
+            self._setSources = function(sourceId) {
+                if (!sourceId || !bitlib.common.isString(sourceId)) {
+                    return self;
+                }
 
-    // Alias
-    UIValueTransmitter.prototype.from = UIValueTransmitter.prototype.setSources;
+                sources = mapper.get(sourceId);
 
-    UIValueTransmitter.prototype.setDestinations = function (destinationId) {
-      this._setSources(destinationId);
-      return this;
-    };
+                return self;
+            };
 
-    // Alias
-    UIValueTransmitter.prototype.to = UIValueTransmitter.prototype.setDestinations;
+            self._clearSources = function() {
+                sources = [];
+                return self;
+            };
 
-    UIValueTransmitter.prototype.applyValueTransmission = function (instruction) {
-      var self = this;
+            var destinations = [];
 
-      var sources = self._getAllSources(),
-        destinations = self._getAllDestinations();
+            self._getAllDestinations = function() {
+                return bitlib.common.copy(destinations);
+            };
 
-      if (sources.length === 0 || destinations.length === 0) {
-        return self;
-      }
+            self._setDestinations = function(destinationId) {
+                if (!destinationId || !bitlib.common.isString(destinationId)) {
+                    return self;
+                }
 
-      instruction = instruction || function (sval, dest) {
-        // none
-      };
+                destinations = mapper.get(destinationId);
 
-      var transmissionHandler = function (val) {
-        if (!bitlib.common.isString(val)) {
-          return false;
-        }
+                return self;
+            };
 
-        bitlib.array.each(destinations, function (index, destination) {
-          instruction(val, destination);
-        });
+            self._clearDestinations = function() {
+                destinations = [];
+                return self;
+            };
 
-        return true;
-      };
+            var delimiter = defaultDelimiter;
 
-      try {
-        for (var i = 0, len = sources.length; i < len; i++) {
-          sources[i].value.subscribe(function (newValue) {
-            transmissionHandler(newValue);
-          });
+            self._getDelimiter = function() {
+                return delimiter;
+            };
 
-          transmissionHandler(sources[i].value());
-        }
-      } catch (err) {
-        bitlib.logger.error(err);
-      }
+            self._setDelimiter = function(newDelimiter) {
+                if (!bitlib.common.isString(newDelimiter)) {
+                    return self;
+                }
 
-      return self;
-    };
+                delimiter = newDelimiter;
 
-    UIValueTransmitter.getClassName = function () {
-      return className;
-    };
+                return self;
+            };
 
-    return UIValueTransmitter;
-  }());
+            self._resetDelimiter = function() {
+                delimiter = defaultDelimiter;
+                return self;
+            };
 
-  BitWeb.SelectUIOptionsFactory = (function () {
-    var className = "SelectUIOptionsFactory";
+            self._reset = function() {
+                sources = [], destinations = [];
 
-    function SelectUIOptionsFactory() {
-      var self = this;
+                self._resetDelimiter();
 
-      var options = ko.observableArray();
+                return self;
+            };
 
-      self._returnOptions = function () {
-        return options;
-      };
-
-      self._replaceOptions = function (newOptions) {
-        if (bitlib.common.isObservableArray(newOptions)) {
-          options = newOptions;
-        }
-        return self;
-      };
-
-      self._addOption = function (newOpts) {
-        newOpts = newOpts || [];
-        newOpts = bitlib.common.isArray(newOpts) ? newOpts : [newOpts];
-
-        var opts = [];
-        for (var i = 0, len = newOpts.length; i < len; i++) {
-          if (bitlib.common.isObject(newOpts[i]) && !!newOpts[i].isSelectUIOptionViewModel) {
-            opts.push(newOpts[i]);
-          }
+            return self;
         }
 
-        if (0 < opts.length) {
-          options.push.apply(options, opts);
+        UIValueCopier.prototype.setSources = function(sourceId) {
+            this._setSources(sourceId);
+            return this;
+        };
+
+        // Alias
+        UIValueCopier.prototype.from = UIValueCopier.prototype.setSources;
+
+        UIValueCopier.prototype.setDestinations = function(destinationId) {
+            this._setSources(destinationId);
+            return this;
+        };
+
+        // Alias
+        UIValueCopier.prototype.to = UIValueCopier.prototype.setDestinations;
+
+        UIValueCopier.prototype.resetDelimiter = function() {
+            this._resetDelimiter();
+            return this;
+        };
+
+        UIValueCopier.prototype.copyValue = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].value());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable() && !destinations[i].isValid()) {
+                    if (validator(destinations[i], val)) {
+                        destinations[i].value(val);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.prototype.joinValue = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].value());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable()) {
+                    if (validator(destinations[i], val)) {
+                        var dval = (destinations[i].isValid() ? (destinations[i].value() + self._getDelimiter()) : "") + val;
+                        destinations[i].value(dval);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.prototype.overwriteValue = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].value());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable()) {
+                    if (validator(destinations[i], val)) {
+                        destinations[i].value(val);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.prototype.copyOutput = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].output());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable() && !destinations[i].isValid()) {
+                    if (validator(destinations[i], val)) {
+                        destinations[i].value(val);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.prototype.joinOutput = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].output());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable()) {
+                    if (validator(destinations[i], val)) {
+                        var dval = (destinations[i].isValid() ? (destinations[i].value() + self._getDelimiter()) : "") + val;
+                        destinations[i].value(dval);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.prototype.overwriteOutput = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].output());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable()) {
+                    if (validator(destinations[i], val)) {
+                        destinations[i].value(val);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.prototype.copyText = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].toText());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable() && !destinations[i].isValid()) {
+                    if (validator(destinations[i], val)) {
+                        destinations[i].value(val);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.prototype.joinText = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].toText());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable()) {
+                    if (validator(destinations[i], val)) {
+                        var dval = (destinations[i].isValid() ? (destinations[i].value() + self._getDelimiter()) : "") + val;
+                        destinations[i].value(dval);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.prototype.overwriteText = function(validator) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            var i = 0,
+                len = 0;
+
+            var valArr = [];
+            for (i = 0, len = sources.length; i < len; i++) {
+                if (sources[i].isValid()) {
+                    valArr.push(sources[i].toText());
+                }
+            }
+
+            if (valArr.length === 0) {
+                return self;
+            }
+
+            var val = valArr.join(self._getDelimiter());
+
+            validator = validator || function(destination, sval) {
+                return true;
+            };
+
+            for (i = 0, len = destinations.length; i < len; i++) {
+                if (destinations[i].isWritable()) {
+                    if (validator(destinations[i], val)) {
+                        destinations[i].value(val);
+                    }
+                }
+            }
+
+            return self;
+        };
+
+        UIValueCopier.getClassName = function() {
+            return className;
+        };
+
+        return UIValueCopier;
+    }());
+
+    BitWeb.UIValueReflector = (function() {
+        var className = "UIValueReflector";
+
+        function UIValueReflector() {
+            if (!(this instanceof UIValueReflector)) {
+                return new UIValueReflector();
+            }
+
+            // singleton
+            if (UIValueReflector.prototype._singletonInstance) {
+                return UIValueReflector.prototype._singletonInstance;
+            }
+            var self = this;
+            UIValueReflector.prototype._singletonInstance = self;
+
+            var mapper = new BitWeb.UIMapper();
+
+            var sources = [];
+
+            self._getAllSources = function() {
+                return bitlib.common.copy(sources);
+            };
+
+            self._setSources = function(sourceId) {
+                if (!sourceId || !bitlib.common.isString(sourceId)) {
+                    return self;
+                }
+
+                sources = mapper.get(sourceId);
+
+                return self;
+            };
+
+            self._clearSources = function() {
+                sources = [];
+                return self;
+            };
+
+            var destinations = [];
+
+            self._getAllDestinations = function() {
+                return bitlib.common.copy(destinations);
+            };
+
+            self._setDestinations = function(destinationId) {
+                if (!destinationId || !bitlib.common.isString(destinationId)) {
+                    return self;
+                }
+
+                destinations = mapper.get(destinationId);
+
+                return self;
+            };
+
+            self._clearDestinations = function() {
+                destinations = [];
+                return self;
+            };
+
+            self._reset = function() {
+                sources = [], destinations = [];
+                return self;
+            };
+
+            return self;
         }
 
-        return self;
-      };
+        UIValueReflector.prototype.setSources = function(sourceId) {
+            this._setSources(sourceId);
+            return this;
+        };
 
-      self._clearOptions = function () {
-        options.removeAll();
-        return self;
-      };
+        // Alias
+        UIValueReflector.prototype.from = UIValueReflector.prototype.setSources;
 
-      return self;
-    }
+        UIValueReflector.prototype.setDestinations = function(destinationId) {
+            this._setSources(destinationId);
+            return this;
+        };
 
-    SelectUIOptionsFactory.prototype.to = function (options) {
-      this._replaceOptions(options);
-      return this;
-    };
+        // Alias
+        UIValueReflector.prototype.to = UIValueReflector.prototype.setDestinations;
 
-    SelectUIOptionsFactory.prototype.publish = function (masterRep, buildOptionsFunc) {
-      var self = this;
+        UIValueReflector.prototype.applyValueReflection = function(converter) {
+            var self = this;
 
-      if (!masterRep || !bitlib.common.isFunction(buildOptionsFunc)) {
-        return self._returnOptions();
-      }
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
 
-      var promise = masterRep.load();
-      promise
-        .done(function () {
-          var options = buildOptionsFunc(masterRep);
-          if (bitlib.common.isArray(options)) {
-            self
-              ._clearOptions()
-              ._addOption(options);
-          }
-        });
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
 
-      return self._returnOptions();
-    };
+            converter = converter || function(sval) {
+                return sval;
+            };
 
-    SelectUIOptionsFactory.getClassName = function () {
-      return className;
-    };
+            var reflectionHandler = function(val) {
+                if (!bitlib.common.isString(val)) {
+                    return false;
+                }
 
-    return SelectUIOptionsFactory;
-  }());
+                bitlib.array.each(destinations, function(index, destination) {
+                    destination.value(val);
+                });
+
+                return true;
+            };
+
+            try {
+                for (var i = 0, len = sources.length; i < len; i++) {
+                    sources[i].value.subscribe(function(newValue) {
+                        reflectionHandler(converter(newValue));
+                    });
+
+                    reflectionHandler(converter(sources[i].value()));
+                }
+            } catch (err) {
+                bitlib.logger.error(err);
+            }
+
+            return self;
+        };
+
+        UIValueReflector.getClassName = function() {
+            return className;
+        };
+
+        return UIValueReflector;
+    }());
+
+    BitWeb.UIValueTransmitter = (function() {
+        var className = "UIValueTransmitter";
+
+        function UIValueTransmitter() {
+            if (!(this instanceof UIValueTransmitter)) {
+                return new UIValueTransmitter();
+            }
+
+            // singleton
+            if (UIValueTransmitter.prototype._singletonInstance) {
+                return UIValueTransmitter.prototype._singletonInstance;
+            }
+            var self = this;
+            UIValueTransmitter.prototype._singletonInstance = self;
+
+            var mapper = new BitWeb.UIMapper();
+
+            var sources = [];
+
+            self._getAllSources = function() {
+                return bitlib.common.copy(sources);
+            };
+
+            self._setSources = function(sourceId) {
+                if (!sourceId || !bitlib.common.isString(sourceId)) {
+                    return self;
+                }
+
+                sources = mapper.get(sourceId);
+
+                return self;
+            };
+
+            self._clearSources = function() {
+                sources = [];
+                return self;
+            };
+
+            var destinations = [];
+
+            self._getAllDestinations = function() {
+                return bitlib.common.copy(destinations);
+            };
+
+            self._setDestinations = function(destinationId) {
+                if (!destinationId || !bitlib.common.isString(destinationId)) {
+                    return self;
+                }
+
+                destinations = mapper.get(destinationId);
+
+                return self;
+            };
+
+            self._clearDestinations = function() {
+                destinations = [];
+                return self;
+            };
+
+            self._reset = function() {
+                sources = [], destinations = [];
+                return self;
+            };
+
+            return self;
+        }
+
+        UIValueTransmitter.prototype.setSources = function(sourceId) {
+            this._setSources(sourceId);
+            return this;
+        };
+
+        // Alias
+        UIValueTransmitter.prototype.from = UIValueTransmitter.prototype.setSources;
+
+        UIValueTransmitter.prototype.setDestinations = function(destinationId) {
+            this._setSources(destinationId);
+            return this;
+        };
+
+        // Alias
+        UIValueTransmitter.prototype.to = UIValueTransmitter.prototype.setDestinations;
+
+        UIValueTransmitter.prototype.applyValueTransmission = function(instruction) {
+            var self = this;
+
+            var sources = self._getAllSources(),
+                destinations = self._getAllDestinations();
+
+            if (sources.length === 0 || destinations.length === 0) {
+                return self;
+            }
+
+            instruction = instruction || function(sval, dest) {
+                // none
+            };
+
+            var transmissionHandler = function(val) {
+                if (!bitlib.common.isString(val)) {
+                    return false;
+                }
+
+                bitlib.array.each(destinations, function(index, destination) {
+                    instruction(val, destination);
+                });
+
+                return true;
+            };
+
+            try {
+                for (var i = 0, len = sources.length; i < len; i++) {
+                    sources[i].value.subscribe(function(newValue) {
+                        transmissionHandler(newValue);
+                    });
+
+                    transmissionHandler(sources[i].value());
+                }
+            } catch (err) {
+                bitlib.logger.error(err);
+            }
+
+            return self;
+        };
+
+        UIValueTransmitter.getClassName = function() {
+            return className;
+        };
+
+        return UIValueTransmitter;
+    }());
+
+    BitWeb.SelectUIOptionsFactory = (function() {
+        var className = "SelectUIOptionsFactory";
+
+        function SelectUIOptionsFactory() {
+            var self = this;
+
+            var options = ko.observableArray();
+
+            self._returnOptions = function() {
+                return options;
+            };
+
+            self._replaceOptions = function(newOptions) {
+                if (bitlib.common.isObservableArray(newOptions)) {
+                    options = newOptions;
+                }
+                return self;
+            };
+
+            self._addOption = function(newOpts) {
+                newOpts = newOpts || [];
+                newOpts = bitlib.common.isArray(newOpts) ? newOpts : [newOpts];
+
+                var opts = [];
+                for (var i = 0, len = newOpts.length; i < len; i++) {
+                    if (bitlib.common.isObject(newOpts[i]) && !!newOpts[i].isSelectUIOptionViewModel) {
+                        opts.push(newOpts[i]);
+                    }
+                }
+
+                if (0 < opts.length) {
+                    options.push.apply(options, opts);
+                }
+
+                return self;
+            };
+
+            self._clearOptions = function() {
+                options.removeAll();
+                return self;
+            };
+
+            return self;
+        }
+
+        SelectUIOptionsFactory.prototype.to = function(options) {
+            this._replaceOptions(options);
+            return this;
+        };
+
+        SelectUIOptionsFactory.prototype.publish = function(masterRep, buildOptionsFunc) {
+            var self = this;
+
+            if (!masterRep || !bitlib.common.isFunction(buildOptionsFunc)) {
+                return self._returnOptions();
+            }
+
+            var promise = masterRep.load();
+            promise
+                .done(function() {
+                    var options = buildOptionsFunc(masterRep);
+                    if (bitlib.common.isArray(options)) {
+                        self
+                            ._clearOptions()
+                            ._addOption(options);
+                    }
+                });
+
+            return self._returnOptions();
+        };
+
+        SelectUIOptionsFactory.getClassName = function() {
+            return className;
+        };
+
+        return SelectUIOptionsFactory;
+    }());
 
 }(BitWeb || {}));
