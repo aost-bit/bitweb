@@ -1,7 +1,7 @@
-(function(BitWeb) {
+(function (BitWeb) {
     "use strict";
 
-    BitWeb.UIMapper = (function() {
+    BitWeb.UIMapper = (function () {
         var className = "UIMapper";
 
         function UIMapper() {
@@ -14,13 +14,13 @@
 
             var interfaces = ko.observableArray();
 
-            self.interfaces = ko.pureComputed(function() {
+            self.interfaces = ko.pureComputed(function () {
                 return interfaces();
             }, self);
 
             var interfacesMap = {};
 
-            self._get = function(name) {
+            self._get = function (name) {
                 if (!name || !bitlib.common.isString(name)) {
                     return [];
                 }
@@ -30,7 +30,7 @@
                 }
 
                 var results = [];
-                bitlib.array.each(interfaces, function(i, itf) {
+                bitlib.array.each(interfaces, function (i, itf) {
                     results = results.concat(itf.getUIByName(name));
                 });
 
@@ -39,7 +39,7 @@
                 return results;
             };
 
-            self._add = function(itfs) {
+            self._add = function (itfs) {
                 itfs = itfs || [];
                 itfs = bitlib.common.isArray(itfs) ? itfs : [itfs];
 
@@ -49,7 +49,7 @@
                     return self;
                 }
 
-                var indicator = function(uivm) {
+                var indicator = function (uivm) {
                     if (!uivm.name) {
                         return uivm;
                     }
@@ -63,7 +63,7 @@
                     return uivm;
                 };
 
-                bitlib.array.each(itfs, function(i, itf) {
+                bitlib.array.each(itfs, function (i, itf) {
                     itf.command(indicator);
                 });
 
@@ -74,12 +74,12 @@
 
             var hiddenInterfaces = [];
 
-            self._applyHideAll = function() {
+            self._applyHideAll = function () {
                 if (0 < hiddenInterfaces.length) {
                     return self;
                 }
 
-                var indicator = function(uivm) {
+                var indicator = function (uivm) {
                     if (!uivm.isVisible()) {
                         return uivm;
                     }
@@ -90,19 +90,19 @@
                     return uivm;
                 };
 
-                bitlib.array.each(interfaces, function(i, itf) {
+                bitlib.array.each(interfaces, function (i, itf) {
                     itf.command(indicator);
                 });
 
                 return self;
             };
 
-            self._applyShowAll = function() {
+            self._applyShowAll = function () {
                 if (hiddenInterfaces.length === 0) {
                     return self;
                 }
 
-                bitlib.array.each(hiddenInterfaces, function(i, itf) {
+                bitlib.array.each(hiddenInterfaces, function (i, itf) {
                     itf.show();
                 });
 
@@ -111,7 +111,7 @@
                 return self;
             };
 
-            self._applyShowAllAsynchronously = function(interval) {
+            self._applyShowAllAsynchronously = function (interval) {
                 var defer = $.Deferred();
 
                 if (hiddenInterfaces.length === 0) {
@@ -122,12 +122,12 @@
                     interval = 100;
                 }
 
-                var promise = bitlib.array.eachTimeout(hiddenInterfaces, function(i, itf) {
+                var promise = bitlib.array.eachTimeout(hiddenInterfaces, function (i, itf) {
                     itf.show();
                 }, interval);
 
                 promise
-                    .done(function() {
+                    .done(function () {
                         hiddenInterfaces = [];
 
                         defer.resolve();
@@ -139,61 +139,61 @@
             return self;
         }
 
-        UIMapper.prototype.get = function(name) {
+        UIMapper.prototype.get = function (name) {
             return this._get(name);
         };
 
-        UIMapper.prototype.fget = function(name) {
+        UIMapper.prototype.fget = function (name) {
             return this._get(name)[0] || {};
         };
 
-        UIMapper.prototype.add = function(uivm) {
+        UIMapper.prototype.add = function (uivm) {
             this._add(uivm);
             return this;
         };
 
-        UIMapper.prototype.resetAll = function() {
+        UIMapper.prototype.resetAll = function () {
             var self = this;
 
-            bitlib.array.each(self.interfaces, function(i, itf) {
+            bitlib.array.each(self.interfaces, function (i, itf) {
                 itf.reset();
             });
 
             return self;
         };
 
-        UIMapper.prototype.clearAll = function() {
+        UIMapper.prototype.clearAll = function () {
             var self = this;
 
-            bitlib.array.each(self.interfaces, function(i, itf) {
+            bitlib.array.each(self.interfaces, function (i, itf) {
                 itf.clear();
             });
 
             return self;
         };
 
-        UIMapper.prototype.hideAll = function() {
+        UIMapper.prototype.hideAll = function () {
             this._applyHideAll();
             return this;
         };
 
-        UIMapper.prototype.showAll = function() {
+        UIMapper.prototype.showAll = function () {
             this._applyShowAll();
             return this;
         };
 
-        UIMapper.prototype.showAllAsynchronously = function(interval) {
+        UIMapper.prototype.showAllAsynchronously = function (interval) {
             return this._applyShowAllAsynchronously(interval);
         };
 
-        UIMapper.getClassName = function() {
+        UIMapper.getClassName = function () {
             return className;
         };
 
         return UIMapper;
     }());
 
-    BitWeb.UIValidator = (function() {
+    BitWeb.UIValidator = (function () {
         var className = "UIValidator";
 
         function UIValidator() {
@@ -210,11 +210,11 @@
 
             var policies = [];
 
-            self._getAllPolicies = function() {
+            self._getAllPolicies = function () {
                 return bitlib.common.copy(policies);
             };
 
-            self._addPolicy = function(newPolicies) {
+            self._addPolicy = function (newPolicies) {
                 newPolicies = newPolicies || [];
                 newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
 
@@ -233,7 +233,7 @@
                 return self;
             };
 
-            self._clearPolicies = function() {
+            self._clearPolicies = function () {
                 policies = [];
                 return self;
             };
@@ -241,17 +241,17 @@
             return self;
         }
 
-        UIValidator.prototype.addPolicy = function(policy) {
+        UIValidator.prototype.addPolicy = function (policy) {
             this._addPolicy(policy);
             return this;
         };
 
-        UIValidator.prototype.clear = function() {
+        UIValidator.prototype.clear = function () {
             this._clearPolicies();
             return this;
         };
 
-        UIValidator.prototype.validate = function() {
+        UIValidator.prototype.validate = function () {
             var self = this;
 
             var policies = self._getAllPolicies();
@@ -273,14 +273,14 @@
             return true;
         };
 
-        UIValidator.getClassName = function() {
+        UIValidator.getClassName = function () {
             return className;
         };
 
         return UIValidator;
     }());
 
-    BitWeb.UIDisplayer = (function() {
+    BitWeb.UIDisplayer = (function () {
         var className = "UIDisplayer";
 
         function UIDisplayer() {
@@ -304,11 +304,11 @@
             var sources = [];
 
 
-            self._getAllSources = function() {
+            self._getAllSources = function () {
                 return bitlib.common.copy(sources);
             };
 
-            self._setSources = function(sourceId) {
+            self._setSources = function (sourceId) {
                 if (!sourceId || !bitlib.common.isString(sourceId)) {
                     return self;
                 }
@@ -318,18 +318,18 @@
                 return self;
             };
 
-            self._clearSources = function() {
+            self._clearSources = function () {
                 sources = [];
                 return self;
             };
 
             var destinations = [];
 
-            self._getAllDestinations = function() {
+            self._getAllDestinations = function () {
                 return bitlib.common.copy(destinations);
             };
 
-            self._setDestinations = function(destinationId) {
+            self._setDestinations = function (destinationId) {
                 if (!destinationId || !bitlib.common.isString(destinationId)) {
                     return self;
                 }
@@ -339,12 +339,12 @@
                 return self;
             };
 
-            self._clearDestinations = function() {
+            self._clearDestinations = function () {
                 destinations = [];
                 return self;
             };
 
-            self._reset = function() {
+            self._reset = function () {
                 sources = [], destinations = [];
                 return self;
             };
@@ -352,7 +352,7 @@
             return self;
         }
 
-        UIDisplayer.prototype.setSources = function(sourceId) {
+        UIDisplayer.prototype.setSources = function (sourceId) {
             this._setSources(sourceId);
             return this;
         };
@@ -360,7 +360,7 @@
         // Alias
         UIDisplayer.prototype.from = UIDisplayer.prototype.setSources;
 
-        UIDisplayer.prototype.setDestinations = function(destinationId) {
+        UIDisplayer.prototype.setDestinations = function (destinationId) {
             this._setSources(destinationId);
             return this;
         };
@@ -368,7 +368,7 @@
         // Alias
         UIDisplayer.prototype.to = UIDisplayer.prototype.setDestinations;
 
-        UIDisplayer.prototype.applyVisibility = function(policy) {
+        UIDisplayer.prototype.applyVisibility = function (policy) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -378,14 +378,14 @@
                 return self;
             }
 
-            policy = policy || function(sval) {
+            policy = policy || function (sval) {
                 return !!sval;
             };
 
-            var visibilityHandler = function(isVisible) {
+            var visibilityHandler = function (isVisible) {
                 isVisible = !!isVisible;
 
-                bitlib.array.each(destinations, function(index, destination) {
+                bitlib.array.each(destinations, function (index, destination) {
                     if (isVisible) {
                         destination.show();
                     } else {
@@ -400,7 +400,7 @@
 
             try {
                 for (var i = 0, len = sources.length; i < len; i++) {
-                    sources[i].value.subscribe(function(newValue) {
+                    sources[i].value.subscribe(function (newValue) {
                         visibilityHandler(policy(newValue));
                     });
 
@@ -413,14 +413,14 @@
             return self;
         };
 
-        UIDisplayer.getClassName = function() {
+        UIDisplayer.getClassName = function () {
             return className;
         };
 
         return UIDisplayer;
     }());
 
-    BitWeb.UIValueCopier = (function() {
+    BitWeb.UIValueCopier = (function () {
         var className = "UIValueCopier";
 
         var defaultDelimiter = "\n";
@@ -445,11 +445,11 @@
 
             var sources = [];
 
-            self._getAllSources = function() {
+            self._getAllSources = function () {
                 return bitlib.common.copy(sources);
             };
 
-            self._setSources = function(sourceId) {
+            self._setSources = function (sourceId) {
                 if (!sourceId || !bitlib.common.isString(sourceId)) {
                     return self;
                 }
@@ -459,18 +459,18 @@
                 return self;
             };
 
-            self._clearSources = function() {
+            self._clearSources = function () {
                 sources = [];
                 return self;
             };
 
             var destinations = [];
 
-            self._getAllDestinations = function() {
+            self._getAllDestinations = function () {
                 return bitlib.common.copy(destinations);
             };
 
-            self._setDestinations = function(destinationId) {
+            self._setDestinations = function (destinationId) {
                 if (!destinationId || !bitlib.common.isString(destinationId)) {
                     return self;
                 }
@@ -480,18 +480,18 @@
                 return self;
             };
 
-            self._clearDestinations = function() {
+            self._clearDestinations = function () {
                 destinations = [];
                 return self;
             };
 
             var delimiter = defaultDelimiter;
 
-            self._getDelimiter = function() {
+            self._getDelimiter = function () {
                 return delimiter;
             };
 
-            self._setDelimiter = function(newDelimiter) {
+            self._setDelimiter = function (newDelimiter) {
                 if (!bitlib.common.isString(newDelimiter)) {
                     return self;
                 }
@@ -501,12 +501,12 @@
                 return self;
             };
 
-            self._resetDelimiter = function() {
+            self._resetDelimiter = function () {
                 delimiter = defaultDelimiter;
                 return self;
             };
 
-            self._reset = function() {
+            self._reset = function () {
                 sources = [], destinations = [];
 
                 self._resetDelimiter();
@@ -517,7 +517,7 @@
             return self;
         }
 
-        UIValueCopier.prototype.setSources = function(sourceId) {
+        UIValueCopier.prototype.setSources = function (sourceId) {
             this._setSources(sourceId);
             return this;
         };
@@ -525,7 +525,7 @@
         // Alias
         UIValueCopier.prototype.from = UIValueCopier.prototype.setSources;
 
-        UIValueCopier.prototype.setDestinations = function(destinationId) {
+        UIValueCopier.prototype.setDestinations = function (destinationId) {
             this._setSources(destinationId);
             return this;
         };
@@ -533,12 +533,12 @@
         // Alias
         UIValueCopier.prototype.to = UIValueCopier.prototype.setDestinations;
 
-        UIValueCopier.prototype.resetDelimiter = function() {
+        UIValueCopier.prototype.resetDelimiter = function () {
             this._resetDelimiter();
             return this;
         };
 
-        UIValueCopier.prototype.copyValue = function(validator) {
+        UIValueCopier.prototype.copyValue = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -564,7 +564,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -579,7 +579,7 @@
             return self;
         };
 
-        UIValueCopier.prototype.joinValue = function(validator) {
+        UIValueCopier.prototype.joinValue = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -605,7 +605,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -621,7 +621,7 @@
             return self;
         };
 
-        UIValueCopier.prototype.overwriteValue = function(validator) {
+        UIValueCopier.prototype.overwriteValue = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -647,7 +647,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -662,7 +662,7 @@
             return self;
         };
 
-        UIValueCopier.prototype.copyOutput = function(validator) {
+        UIValueCopier.prototype.copyOutput = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -688,7 +688,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -703,7 +703,7 @@
             return self;
         };
 
-        UIValueCopier.prototype.joinOutput = function(validator) {
+        UIValueCopier.prototype.joinOutput = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -729,7 +729,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -745,7 +745,7 @@
             return self;
         };
 
-        UIValueCopier.prototype.overwriteOutput = function(validator) {
+        UIValueCopier.prototype.overwriteOutput = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -771,7 +771,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -786,7 +786,7 @@
             return self;
         };
 
-        UIValueCopier.prototype.copyText = function(validator) {
+        UIValueCopier.prototype.copyText = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -812,7 +812,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -827,7 +827,7 @@
             return self;
         };
 
-        UIValueCopier.prototype.joinText = function(validator) {
+        UIValueCopier.prototype.joinText = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -853,7 +853,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -869,7 +869,7 @@
             return self;
         };
 
-        UIValueCopier.prototype.overwriteText = function(validator) {
+        UIValueCopier.prototype.overwriteText = function (validator) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -895,7 +895,7 @@
 
             var val = valArr.join(self._getDelimiter());
 
-            validator = validator || function(destination, sval) {
+            validator = validator || function (destination, sval) {
                 return true;
             };
 
@@ -910,14 +910,14 @@
             return self;
         };
 
-        UIValueCopier.getClassName = function() {
+        UIValueCopier.getClassName = function () {
             return className;
         };
 
         return UIValueCopier;
     }());
 
-    BitWeb.UIValueReflector = (function() {
+    BitWeb.UIValueReflector = (function () {
         var className = "UIValueReflector";
 
         function UIValueReflector() {
@@ -936,11 +936,11 @@
 
             var sources = [];
 
-            self._getAllSources = function() {
+            self._getAllSources = function () {
                 return bitlib.common.copy(sources);
             };
 
-            self._setSources = function(sourceId) {
+            self._setSources = function (sourceId) {
                 if (!sourceId || !bitlib.common.isString(sourceId)) {
                     return self;
                 }
@@ -950,18 +950,18 @@
                 return self;
             };
 
-            self._clearSources = function() {
+            self._clearSources = function () {
                 sources = [];
                 return self;
             };
 
             var destinations = [];
 
-            self._getAllDestinations = function() {
+            self._getAllDestinations = function () {
                 return bitlib.common.copy(destinations);
             };
 
-            self._setDestinations = function(destinationId) {
+            self._setDestinations = function (destinationId) {
                 if (!destinationId || !bitlib.common.isString(destinationId)) {
                     return self;
                 }
@@ -971,12 +971,12 @@
                 return self;
             };
 
-            self._clearDestinations = function() {
+            self._clearDestinations = function () {
                 destinations = [];
                 return self;
             };
 
-            self._reset = function() {
+            self._reset = function () {
                 sources = [], destinations = [];
                 return self;
             };
@@ -984,7 +984,7 @@
             return self;
         }
 
-        UIValueReflector.prototype.setSources = function(sourceId) {
+        UIValueReflector.prototype.setSources = function (sourceId) {
             this._setSources(sourceId);
             return this;
         };
@@ -992,7 +992,7 @@
         // Alias
         UIValueReflector.prototype.from = UIValueReflector.prototype.setSources;
 
-        UIValueReflector.prototype.setDestinations = function(destinationId) {
+        UIValueReflector.prototype.setDestinations = function (destinationId) {
             this._setSources(destinationId);
             return this;
         };
@@ -1000,7 +1000,7 @@
         // Alias
         UIValueReflector.prototype.to = UIValueReflector.prototype.setDestinations;
 
-        UIValueReflector.prototype.applyValueReflection = function(converter) {
+        UIValueReflector.prototype.applyValueReflection = function (converter) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -1010,16 +1010,16 @@
                 return self;
             }
 
-            converter = converter || function(sval) {
+            converter = converter || function (sval) {
                 return sval;
             };
 
-            var reflectionHandler = function(val) {
+            var reflectionHandler = function (val) {
                 if (!bitlib.common.isString(val)) {
                     return false;
                 }
 
-                bitlib.array.each(destinations, function(index, destination) {
+                bitlib.array.each(destinations, function (index, destination) {
                     destination.value(val);
                 });
 
@@ -1028,7 +1028,7 @@
 
             try {
                 for (var i = 0, len = sources.length; i < len; i++) {
-                    sources[i].value.subscribe(function(newValue) {
+                    sources[i].value.subscribe(function (newValue) {
                         reflectionHandler(converter(newValue));
                     });
 
@@ -1041,14 +1041,14 @@
             return self;
         };
 
-        UIValueReflector.getClassName = function() {
+        UIValueReflector.getClassName = function () {
             return className;
         };
 
         return UIValueReflector;
     }());
 
-    BitWeb.UIValueTransmitter = (function() {
+    BitWeb.UIValueTransmitter = (function () {
         var className = "UIValueTransmitter";
 
         function UIValueTransmitter() {
@@ -1067,11 +1067,11 @@
 
             var sources = [];
 
-            self._getAllSources = function() {
+            self._getAllSources = function () {
                 return bitlib.common.copy(sources);
             };
 
-            self._setSources = function(sourceId) {
+            self._setSources = function (sourceId) {
                 if (!sourceId || !bitlib.common.isString(sourceId)) {
                     return self;
                 }
@@ -1081,18 +1081,18 @@
                 return self;
             };
 
-            self._clearSources = function() {
+            self._clearSources = function () {
                 sources = [];
                 return self;
             };
 
             var destinations = [];
 
-            self._getAllDestinations = function() {
+            self._getAllDestinations = function () {
                 return bitlib.common.copy(destinations);
             };
 
-            self._setDestinations = function(destinationId) {
+            self._setDestinations = function (destinationId) {
                 if (!destinationId || !bitlib.common.isString(destinationId)) {
                     return self;
                 }
@@ -1102,12 +1102,12 @@
                 return self;
             };
 
-            self._clearDestinations = function() {
+            self._clearDestinations = function () {
                 destinations = [];
                 return self;
             };
 
-            self._reset = function() {
+            self._reset = function () {
                 sources = [], destinations = [];
                 return self;
             };
@@ -1115,7 +1115,7 @@
             return self;
         }
 
-        UIValueTransmitter.prototype.setSources = function(sourceId) {
+        UIValueTransmitter.prototype.setSources = function (sourceId) {
             this._setSources(sourceId);
             return this;
         };
@@ -1123,7 +1123,7 @@
         // Alias
         UIValueTransmitter.prototype.from = UIValueTransmitter.prototype.setSources;
 
-        UIValueTransmitter.prototype.setDestinations = function(destinationId) {
+        UIValueTransmitter.prototype.setDestinations = function (destinationId) {
             this._setSources(destinationId);
             return this;
         };
@@ -1131,7 +1131,7 @@
         // Alias
         UIValueTransmitter.prototype.to = UIValueTransmitter.prototype.setDestinations;
 
-        UIValueTransmitter.prototype.applyValueTransmission = function(instruction) {
+        UIValueTransmitter.prototype.applyValueTransmission = function (instruction) {
             var self = this;
 
             var sources = self._getAllSources(),
@@ -1141,16 +1141,16 @@
                 return self;
             }
 
-            instruction = instruction || function(sval, dest) {
+            instruction = instruction || function (sval, dest) {
                 // none
             };
 
-            var transmissionHandler = function(val) {
+            var transmissionHandler = function (val) {
                 if (!bitlib.common.isString(val)) {
                     return false;
                 }
 
-                bitlib.array.each(destinations, function(index, destination) {
+                bitlib.array.each(destinations, function (index, destination) {
                     instruction(val, destination);
                 });
 
@@ -1159,7 +1159,7 @@
 
             try {
                 for (var i = 0, len = sources.length; i < len; i++) {
-                    sources[i].value.subscribe(function(newValue) {
+                    sources[i].value.subscribe(function (newValue) {
                         transmissionHandler(newValue);
                     });
 
@@ -1172,14 +1172,14 @@
             return self;
         };
 
-        UIValueTransmitter.getClassName = function() {
+        UIValueTransmitter.getClassName = function () {
             return className;
         };
 
         return UIValueTransmitter;
     }());
 
-    BitWeb.SelectUIOptionsFactory = (function() {
+    BitWeb.SelectUIOptionsFactory = (function () {
         var className = "SelectUIOptionsFactory";
 
         function SelectUIOptionsFactory() {
@@ -1187,18 +1187,18 @@
 
             var options = ko.observableArray();
 
-            self._returnOptions = function() {
+            self._returnOptions = function () {
                 return options;
             };
 
-            self._replaceOptions = function(newOptions) {
+            self._replaceOptions = function (newOptions) {
                 if (bitlib.common.isObservableArray(newOptions)) {
                     options = newOptions;
                 }
                 return self;
             };
 
-            self._addOption = function(newOpts) {
+            self._addOption = function (newOpts) {
                 newOpts = newOpts || [];
                 newOpts = bitlib.common.isArray(newOpts) ? newOpts : [newOpts];
 
@@ -1216,7 +1216,7 @@
                 return self;
             };
 
-            self._clearOptions = function() {
+            self._clearOptions = function () {
                 options.removeAll();
                 return self;
             };
@@ -1224,12 +1224,12 @@
             return self;
         }
 
-        SelectUIOptionsFactory.prototype.to = function(options) {
+        SelectUIOptionsFactory.prototype.to = function (options) {
             this._replaceOptions(options);
             return this;
         };
 
-        SelectUIOptionsFactory.prototype.publish = function(masterRep, buildOptionsFunc) {
+        SelectUIOptionsFactory.prototype.publish = function (masterRep, buildOptionsFunc) {
             var self = this;
 
             if (!masterRep || !bitlib.common.isFunction(buildOptionsFunc)) {
@@ -1238,7 +1238,7 @@
 
             var promise = masterRep.load();
             promise
-                .done(function() {
+                .done(function () {
                     var options = buildOptionsFunc(masterRep);
                     if (bitlib.common.isArray(options)) {
                         self
@@ -1250,7 +1250,7 @@
             return self._returnOptions();
         };
 
-        SelectUIOptionsFactory.getClassName = function() {
+        SelectUIOptionsFactory.getClassName = function () {
             return className;
         };
 

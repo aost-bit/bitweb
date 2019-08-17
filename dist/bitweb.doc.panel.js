@@ -1,7 +1,7 @@
-(function(BitWeb) {
+(function (BitWeb) {
     "use strict";
 
-    BitWeb.PanelMetricsBase = (function() {
+    BitWeb.PanelMetricsBase = (function () {
         var className = "PanelMetricsBase";
 
         function PanelMetricsBase() {
@@ -22,14 +22,14 @@
         var _super = BitWeb.MetricsBase;
         inherits(PanelMetricsBase, _super);
 
-        PanelMetricsBase.getClassName = function() {
+        PanelMetricsBase.getClassName = function () {
             return className;
         };
 
         return PanelMetricsBase;
     }());
 
-    BitWeb.PanelDocumentBase = (function() {
+    BitWeb.PanelDocumentBase = (function () {
         var className = "PanelDocumentBase";
 
         var metrics;
@@ -43,15 +43,15 @@
 
             var panels = ko.observableArray();
 
-            self.hasPanels = ko.pureComputed(function() {
+            self.hasPanels = ko.pureComputed(function () {
                 return 0 < panels().length;
             }, self);
 
-            self.panels = ko.pureComputed(function() {
+            self.panels = ko.pureComputed(function () {
                 return panels();
             }, self);
 
-            self._addPanel = function(newPanels) {
+            self._addPanel = function (newPanels) {
                 newPanels = newPanels || [];
                 newPanels = bitlib.common.isArray(newPanels) ? newPanels : [newPanels];
 
@@ -70,18 +70,18 @@
                 return self;
             };
 
-            self.maxPanelIndex = ko.pureComputed(function() {
+            self.maxPanelIndex = ko.pureComputed(function () {
                 var len = panels().length;
                 return (len === 0) ? 0 : (len - 1);
             }, self);
 
             var selectedPanelIndex = ko.observable(metrics.params.initPanelIndex);
 
-            self.selectedPanelIndex = ko.pureComputed(function() {
+            self.selectedPanelIndex = ko.pureComputed(function () {
                 return selectedPanelIndex();
             }, self);
 
-            self._setSelectedPanelIndex = function(newIndex) {
+            self._setSelectedPanelIndex = function (newIndex) {
                 newIndex = bitlib.common.toInteger(newIndex);
 
                 if (isNaN(newIndex) || newIndex < 0) {
@@ -104,7 +104,7 @@
                 } else {
                     var promise = newPanel.load();
                     promise
-                        .then(function(panel) {
+                        .then(function (panel) {
                             panel.init();
                             selectedPanelIndex(newIndex);
                         });
@@ -113,11 +113,11 @@
                 return self;
             };
 
-            self.existsPrevPanel = ko.pureComputed(function() {
+            self.existsPrevPanel = ko.pureComputed(function () {
                 return 0 < selectedPanelIndex();
             }, self);
 
-            self.existsNextPanel = ko.pureComputed(function() {
+            self.existsNextPanel = ko.pureComputed(function () {
                 var maxIndex = self.maxPanelIndex();
                 if (maxIndex === 0) {
                     return false;
@@ -125,15 +125,15 @@
                 return selectedPanelIndex() < maxIndex;
             }, self);
 
-            self.focusedPanel = ko.pureComputed(function() {
+            self.focusedPanel = ko.pureComputed(function () {
                 return panels()[selectedPanelIndex()];
             }, self);
 
-            self.isFocused = ko.pureComputed(function() {
+            self.isFocused = ko.pureComputed(function () {
                 return !!self.focusedPanel();
             }, self);
 
-            self.isUnfocused = ko.pureComputed(function() {
+            self.isUnfocused = ko.pureComputed(function () {
                 return !self.focusedPanel();
             }, self);
 
@@ -144,7 +144,7 @@
         var _super = BitWeb.DocumentBase;
         inherits(PanelDocumentBase, _super);
 
-        PanelDocumentBase.prototype.ready = function() {
+        PanelDocumentBase.prototype.ready = function () {
             var self = this;
 
             var defer = $.Deferred();
@@ -156,7 +156,7 @@
 
             var promise = initPanel.load();
             promise
-                .then(function(panel) {
+                .then(function (panel) {
                     defer.resolve();
                     initPanel.init();
                 });
@@ -164,12 +164,12 @@
             return defer.promise();
         };
 
-        PanelDocumentBase.prototype.addPanel = function(panel) {
+        PanelDocumentBase.prototype.addPanel = function (panel) {
             this._addPanel(panel);
             return this;
         };
 
-        PanelDocumentBase.prototype.focus = function(index) {
+        PanelDocumentBase.prototype.focus = function (index) {
             var self = this;
 
             index = bitlib.common.toInteger(index);
@@ -182,12 +182,12 @@
             return self;
         };
 
-        PanelDocumentBase.prototype.blur = function() {
+        PanelDocumentBase.prototype.blur = function () {
             this._setSelectedPanelIndex(-1);
             return this;
         };
 
-        PanelDocumentBase.prototype.toPrevPanel = function() {
+        PanelDocumentBase.prototype.toPrevPanel = function () {
             var self = this;
 
             if (!self.existsPrevPanel()) {
@@ -204,7 +204,7 @@
             return self;
         };
 
-        PanelDocumentBase.prototype.toNextPanel = function() {
+        PanelDocumentBase.prototype.toNextPanel = function () {
             var self = this;
 
             if (!self.existsNextPanel()) {
@@ -221,7 +221,7 @@
             return self;
         };
 
-        PanelDocumentBase.getClassName = function() {
+        PanelDocumentBase.getClassName = function () {
             return className;
         };
 

@@ -1,7 +1,7 @@
-﻿(function(BitWeb) {
+﻿(function (BitWeb) {
     "use strict";
 
-    BitWeb.FileResourceBase = (function() {
+    BitWeb.FileResourceBase = (function () {
         var className = "FileResourceBase";
 
         function FileResourceBase() {
@@ -9,11 +9,11 @@
 
             var exists = ko.observable(false);
 
-            self.exists = ko.pureComputed(function() {
+            self.exists = ko.pureComputed(function () {
                 return exists();
             }, self);
 
-            self._found = function() {
+            self._found = function () {
                 if (!exists()) {
                     exists(true);
                 }
@@ -22,11 +22,11 @@
 
             var creationDateTime = ko.observable(undefined);
 
-            self.creationDateTime = ko.pureComputed(function() {
+            self.creationDateTime = ko.pureComputed(function () {
                 return creationDateTime();
             }, self);
 
-            self._setCreationDateTime = function(newDateTime) {
+            self._setCreationDateTime = function (newDateTime) {
                 if (!bitlib.common.isValidDate(newDateTime)) {
                     return self;
                 }
@@ -38,11 +38,11 @@
 
             var updateDateTime = ko.observable(undefined);
 
-            self.updateDateTime = ko.pureComputed(function() {
+            self.updateDateTime = ko.pureComputed(function () {
                 return updateDateTime();
             }, self);
 
-            self._setUpdateDateTime = function(newDateTime) {
+            self._setUpdateDateTime = function (newDateTime) {
                 if (!bitlib.common.isValidDate(newDateTime)) {
                     return self;
                 }
@@ -54,11 +54,11 @@
 
             var relativePath = ko.observable("");
 
-            self.relativePath = ko.pureComputed(function() {
+            self.relativePath = ko.pureComputed(function () {
                 return relativePath();
             }, self);
 
-            self._setRelativePath = function(newPathStr) {
+            self._setRelativePath = function (newPathStr) {
                 if (!newPathStr || !bitlib.common.isString(newPathStr)) {
                     return self;
                 }
@@ -70,11 +70,11 @@
 
             var fullPath = ko.observable("");
 
-            self.fullPath = ko.pureComputed(function() {
+            self.fullPath = ko.pureComputed(function () {
                 return fullPath();
             }, self);
 
-            self._setFullPath = function(newPathStr) {
+            self._setFullPath = function (newPathStr) {
                 if (!newPathStr || !bitlib.common.isString(newPathStr)) {
                     return self;
                 }
@@ -86,11 +86,11 @@
 
             var urlString = ko.observable("");
 
-            self.urlString = ko.pureComputed(function() {
+            self.urlString = ko.pureComputed(function () {
                 return urlString();
             }, self);
 
-            self._setUrlString = function(newUrlStr) {
+            self._setUrlString = function (newUrlStr) {
                 if (!newUrlStr || !bitlib.common.isString(newUrlStr)) {
                     return self;
                 }
@@ -107,44 +107,44 @@
         var _super = BitWeb.ResourceBase;
         inherits(FileResourceBase, _super);
 
-        FileResourceBase.prototype.found = function() {
+        FileResourceBase.prototype.found = function () {
             this._found();
             return this;
         };
 
-        FileResourceBase.prototype.setCreationTime = function(dateTime) {
+        FileResourceBase.prototype.setCreationTime = function (dateTime) {
             this._setCreationTime(dateTime);
             return this;
         };
 
-        FileResourceBase.prototype.setUpdateTime = function(dateTime) {
+        FileResourceBase.prototype.setUpdateTime = function (dateTime) {
             this._setUpdateTime(dateTime);
             return this;
         };
 
-        FileResourceBase.prototype.setRelativePath = function(path) {
+        FileResourceBase.prototype.setRelativePath = function (path) {
             this._setRelativePath(path);
             return this;
         };
 
-        FileResourceBase.prototype.setFullPath = function(path) {
+        FileResourceBase.prototype.setFullPath = function (path) {
             this._setFullPath(path);
             return this;
         };
 
-        FileResourceBase.prototype.setUrl = function(url) {
+        FileResourceBase.prototype.setUrl = function (url) {
             this._setUrlString(url);
             return this;
         };
 
-        FileResourceBase.getClassName = function() {
+        FileResourceBase.getClassName = function () {
             return className;
         };
 
         return FileResourceBase;
     }());
 
-    BitWeb.ImageFileResource = (function() {
+    BitWeb.ImageFileResource = (function () {
         var className = "ImageFileResource";
 
         function ImageFileResource() {
@@ -154,11 +154,11 @@
 
             var width = ko.observable(0);
 
-            self.width = ko.pureComputed(function() {
+            self.width = ko.pureComputed(function () {
                 return width();
             }, self);
 
-            self._setWidth = function(newWidth) {
+            self._setWidth = function (newWidth) {
                 newWidth = bitlib.common.toNumber(newWidth || 0);
 
                 if (isNaN(newWidth) || newWidth < 0) {
@@ -172,11 +172,11 @@
 
             var height = ko.observable(0);
 
-            self.height = ko.pureComputed(function() {
+            self.height = ko.pureComputed(function () {
                 return height();
             }, self);
 
-            self._setHeight = function(newHeight) {
+            self._setHeight = function (newHeight) {
                 newHeight = bitlib.common.toNumber(newHeight || 0);
 
                 if (isNaN(newHeight) || newHeight < 0) {
@@ -188,7 +188,7 @@
                 return self;
             };
 
-            self._openByViewer = function() {
+            self._openByViewer = function () {
                 if ($.imageViewer) {
                     $.imageViewer.open(self);
                 }
@@ -202,17 +202,17 @@
         var _super = BitWeb.FileResourceBase;
         inherits(ImageFileResource, _super);
 
-        ImageFileResource.prototype.setWidth = function(val) {
+        ImageFileResource.prototype.setWidth = function (val) {
             this._setWidth(val);
             return this;
         };
 
-        ImageFileResource.prototype.setHeight = function(val) {
+        ImageFileResource.prototype.setHeight = function (val) {
             this._setHeight(val);
             return this;
         };
 
-        ImageFileResource.prototype.setSize = function(width, height) {
+        ImageFileResource.prototype.setSize = function (width, height) {
             this
                 ._setWidth(width)
                 ._setHeight(height);
@@ -220,7 +220,7 @@
             return this;
         };
 
-        ImageFileResource.prototype.open = function() {
+        ImageFileResource.prototype.open = function () {
             var self = this;
 
             if (!self.isAvailable() || !self.isValid()) {
@@ -238,7 +238,7 @@
             return self;
         };
 
-        ImageFileResource.getClassName = function() {
+        ImageFileResource.getClassName = function () {
             return className;
         };
 
@@ -246,7 +246,7 @@
     }());
 
     bitlib.ko.addBindingHandler("bindImageViewer", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             // initialize viewer with some optional options
             var options = $.extend({
                 // none
@@ -257,14 +257,14 @@
             $(element).imageViewer(options);
 
             // handle disposal (if KO removes by the template binding)
-            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
                 $(element).imageViewer("destroy");
             });
         }
     });
 
     bitlib.ko.addBindingHandler("bindImageViewerFrame", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var $window = $(window),
                 $element = $(element);
 
@@ -292,7 +292,7 @@
         }
     });
 
-    BitWeb.ImageFileResourceFactory = (function() {
+    BitWeb.ImageFileResourceFactory = (function () {
         var className = "ImageFileResourceFactory";
 
         var dateTimeCorrector = new BitWeb.DateTimeCorrector();
@@ -305,11 +305,11 @@
             var imgResource,
                 scalingRatio = 100.0;
 
-            self._get = function() {
+            self._get = function () {
                 return imgResource;
             };
 
-            self._setScalingRatio = function(newRatio) {
+            self._setScalingRatio = function (newRatio) {
                 newRatio = bitlib.common.toNumber(newRatio || 0);
 
                 if (isNaN(newRatio) || newRatio < 10) {
@@ -427,7 +427,7 @@
             function loadPhotoImage(imgObj, imgType, exifInfo) {
                 var newImage = new Image();
 
-                newImage.onload = function() {
+                newImage.onload = function () {
                     var newCanvas = document.createElement("canvas");
                     var newContext = newCanvas.getContext("2d");
 
@@ -450,13 +450,13 @@
                 imgObj.src = repositionPhotoImage(imgObj, exifInfo).toDataURL(imgType);
             }
 
-            self._loadImage = function(imgType, evtTarget) {
+            self._loadImage = function (imgType, evtTarget) {
                 var dataUrl = evtTarget.result,
                     exifInfo = bitlib.image.getExif(dataUrl, imgType.split("/")[1]);
 
                 var imageObj = new Image();
 
-                imageObj.onload = function() {
+                imageObj.onload = function () {
                     if (!!exifInfo && bitlib.browser.ua.isiOS) {
                         loadPhotoImage(imageObj, imgType, exifInfo);
                     } else {
@@ -470,16 +470,16 @@
             return self;
         }
 
-        ImageFileResourceFactory.prototype.get = function() {
+        ImageFileResourceFactory.prototype.get = function () {
             return this._get();
         };
 
-        ImageFileResourceFactory.prototype.setScalingRatio = function(ratio) {
+        ImageFileResourceFactory.prototype.setScalingRatio = function (ratio) {
             this._setScalingRatio(ratio);
             return this;
         };
 
-        ImageFileResourceFactory.prototype.create = function(fileObj) {
+        ImageFileResourceFactory.prototype.create = function (fileObj) {
             if (!bitlib.browser.isSupportFileAPI()) {
                 bitlib.logger.info("このブラウザでは、画像ファイルオブジェクトを生成できません.");
                 return true;
@@ -494,7 +494,7 @@
 
             var fileReader = new FileReader();
 
-            fileReader.onload = function(event) {
+            fileReader.onload = function (event) {
                 self._loadImage(fileObj.type, event.target);
             };
 
@@ -503,7 +503,7 @@
             return true;
         };
 
-        ImageFileResourceFactory.getClassName = function() {
+        ImageFileResourceFactory.getClassName = function () {
             return className;
         };
 

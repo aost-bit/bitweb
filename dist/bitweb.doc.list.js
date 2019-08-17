@@ -1,7 +1,7 @@
-﻿(function(BitWeb) {
+﻿(function (BitWeb) {
     "use strict";
 
-    BitWeb.ListMetricsBase = (function() {
+    BitWeb.ListMetricsBase = (function () {
         var className = "ListMetricsBase";
 
         function ListMetricsBase() {
@@ -23,14 +23,14 @@
         var _super = BitWeb.MetricsBase;
         inherits(ListMetricsBase, _super);
 
-        ListMetricsBase.getClassName = function() {
+        ListMetricsBase.getClassName = function () {
             return className;
         };
 
         return ListMetricsBase;
     }());
 
-    BitWeb.ListDocumentBase = (function() {
+    BitWeb.ListDocumentBase = (function () {
         var className = "ListDocumentBase";
 
         var metrics;
@@ -44,18 +44,18 @@
 
             var elements = ko.observableArray();
 
-            self.hasElements = ko.pureComputed(function() {
+            self.hasElements = ko.pureComputed(function () {
                 return 0 < elements().length;
             }, self);
 
-            self.elements = ko.pureComputed(function() {
+            self.elements = ko.pureComputed(function () {
                 return elements();
             }, self);
 
-            self.availableElements = ko.pureComputed(function() {
+            self.availableElements = ko.pureComputed(function () {
                 var results = [];
 
-                bitlib.array.each(elements, function(i, elem) {
+                bitlib.array.each(elements, function (i, elem) {
                     if (elem.isAvailable()) {
                         results.push(elem);
                     }
@@ -64,10 +64,10 @@
                 return results;
             });
 
-            self.validElements = ko.pureComputed(function() {
+            self.validElements = ko.pureComputed(function () {
                 var results = [];
 
-                bitlib.array.each(elements, function(i, elem) {
+                bitlib.array.each(elements, function (i, elem) {
                     if (elem.isValid()) {
                         results.push(elem);
                     }
@@ -76,10 +76,10 @@
                 return results;
             });
 
-            self.visibleElements = ko.pureComputed(function() {
+            self.visibleElements = ko.pureComputed(function () {
                 var results = [];
 
-                bitlib.array.each(elements, function(i, elem) {
+                bitlib.array.each(elements, function (i, elem) {
                     if (elem.isVisible()) {
                         results.push(elem);
                     }
@@ -88,7 +88,7 @@
                 return results;
             });
 
-            self._addElement = function(newElems) {
+            self._addElement = function (newElems) {
                 newElems = newElems || [];
                 newElems = bitlib.common.isArray(newElems) ? newElems : [newElems];
 
@@ -109,34 +109,34 @@
                 return self;
             };
 
-            self._clearElements = function() {
+            self._clearElements = function () {
                 elements.removeAll();
                 return self;
             };
 
-            self.maxElementIndex = ko.pureComputed(function() {
+            self.maxElementIndex = ko.pureComputed(function () {
                 var len = self.elements().length;
                 return (len === 0) ? 0 : (len - 1);
             }, self);
 
-            self.maxAvailableElementIndex = ko.pureComputed(function() {
+            self.maxAvailableElementIndex = ko.pureComputed(function () {
                 var len = self.availableElements().length;
                 return (len === 0) ? 0 : (len - 1);
             }, self);
 
-            self.maxValidElementIndex = ko.pureComputed(function() {
+            self.maxValidElementIndex = ko.pureComputed(function () {
                 var len = self.validElements().length;
                 return (len === 0) ? 0 : (len - 1);
             }, self);
 
-            self.maxVisibleElementIndex = ko.pureComputed(function() {
+            self.maxVisibleElementIndex = ko.pureComputed(function () {
                 var len = self.visibleElements().length;
                 return (len === 0) ? 0 : (len - 1);
             }, self);
 
             var selectedElementId = ko.observable("");
 
-            self._setSelectedElementId = function(newId) {
+            self._setSelectedElementId = function (newId) {
                 newId = (newId || "").toString();
 
                 if (!newId || !bitlib.common.isString(newId)) {
@@ -144,7 +144,7 @@
                     return self;
                 }
 
-                bitlib.array.each(self.elements, function(i, elem) {
+                bitlib.array.each(self.elements, function (i, elem) {
                     if (elem.id === newId) {
                         selectedElementId(newId);
                         return false;
@@ -155,7 +155,7 @@
                 return self;
             };
 
-            self.selectedElement = ko.pureComputed(function() {
+            self.selectedElement = ko.pureComputed(function () {
                 var id = selectedElementId();
 
                 if (!id) {
@@ -163,7 +163,7 @@
                 }
 
                 var result = null;
-                bitlib.array.each(self.elements, function(i, elem) {
+                bitlib.array.each(self.elements, function (i, elem) {
                     if (elem.id === id) {
                         result = elem;
                         return false;
@@ -174,7 +174,7 @@
                 return result;
             }, self);
 
-            self.selectedElementIndex = ko.pureComputed(function() {
+            self.selectedElementIndex = ko.pureComputed(function () {
                 var id = selectedElementId();
 
                 if (!id) {
@@ -182,7 +182,7 @@
                 }
 
                 var index = -1;
-                bitlib.array.each(self.elements, function(i, elem) {
+                bitlib.array.each(self.elements, function (i, elem) {
                     if (elem.id === id) {
                         index = i;
                         return false;
@@ -193,11 +193,11 @@
                 return index;
             }, self);
 
-            self.existsPrevElement = ko.pureComputed(function() {
+            self.existsPrevElement = ko.pureComputed(function () {
                 return 0 < self.selectedElementIndex();
             }, self);
 
-            self.existsNextElement = ko.pureComputed(function() {
+            self.existsNextElement = ko.pureComputed(function () {
                 var maxIndex = self.maxVisibleElementIndex();
 
                 if (maxIndex === 0) {
@@ -209,11 +209,11 @@
 
             var totalElementsPerPage = ko.observable(metrics.params.totalElementsPerPage);
 
-            self.totalElementsPerPage = ko.pureComputed(function() {
+            self.totalElementsPerPage = ko.pureComputed(function () {
                 return totalElementsPerPage();
             }, self);
 
-            self._setTotalElementsPerPage = function(num) {
+            self._setTotalElementsPerPage = function (num) {
                 num = bitlib.common.toInteger(num);
 
                 if (bitlib.common.isNumber(num) && !isNaN(num)) {
@@ -225,15 +225,15 @@
 
             var selectedPageIndex = ko.observable(0);
 
-            self.selectedPageIndex = ko.pureComputed(function() {
+            self.selectedPageIndex = ko.pureComputed(function () {
                 return selectedPageIndex();
             }, self);
 
-            self.firstElementIndexOnPage = ko.pureComputed(function() {
+            self.firstElementIndexOnPage = ko.pureComputed(function () {
                 return self.totalElementsPerPage() * self.selectedPageIndex();
             }, self);
 
-            self.maxPageIndex = ko.pureComputed(function() {
+            self.maxPageIndex = ko.pureComputed(function () {
                 var length = totalElementsPerPage();
 
                 if (!length || length < 1) {
@@ -248,7 +248,7 @@
                 return Math.ceil(maxLength / length) - 1;
             }, self);
 
-            self._setSelectedPageIndex = function(newIndex) {
+            self._setSelectedPageIndex = function (newIndex) {
                 newIndex = bitlib.common.toInteger(newIndex || 0);
 
                 if (isNaN(newIndex) || newIndex < 0) {
@@ -265,11 +265,11 @@
                 return self;
             };
 
-            self.existsPrevPage = ko.pureComputed(function() {
+            self.existsPrevPage = ko.pureComputed(function () {
                 return 0 < selectedPageIndex();
             }, self);
 
-            self.existsNextPage = ko.pureComputed(function() {
+            self.existsNextPage = ko.pureComputed(function () {
                 var maxIndex = self.maxPageIndex();
 
                 if (maxIndex === 0) {
@@ -279,7 +279,7 @@
                 return selectedPageIndex() < maxIndex;
             }, self);
 
-            self.elementsOnSelectedPage = ko.pureComputed(function() {
+            self.elementsOnSelectedPage = ko.pureComputed(function () {
                 var length = self.totalElementsPerPage(),
                     elems = self.visibleElements();
 
@@ -294,11 +294,11 @@
 
             var pageRanges = ko.observable(metrics.params.pageRanges);
 
-            self.pageRanges = ko.pureComputed(function() {
+            self.pageRanges = ko.pureComputed(function () {
                 return pageRanges();
             }, self);
 
-            self.backwardPageIndex = ko.pureComputed(function() {
+            self.backwardPageIndex = ko.pureComputed(function () {
                 var movableIndex = self.pageRanges() + 1,
                     selectedIndex = self.selectedPageIndex();
 
@@ -309,7 +309,7 @@
                 return selectedIndex - movableIndex;
             }, self);
 
-            self.forwardPageIndex = ko.pureComputed(function() {
+            self.forwardPageIndex = ko.pureComputed(function () {
                 var movableIndex = self.pageRanges() + 1,
                     selectedIndex = self.selectedPageIndex();
 
@@ -321,13 +321,13 @@
                 return selectedIndex + movableIndex;
             }, self);
 
-            self._swapPositions = function(prevId, nextId) {
+            self._swapPositions = function (prevId, nextId) {
                 if (!prevId || !nextId || prevId === nextId) {
                     return self;
                 }
 
                 var prevElem, nextElem;
-                bitlib.array.each(self.elements, function(i, elem) {
+                bitlib.array.each(self.elements, function (i, elem) {
                     if (elem.id === prevId) {
                         prevElem = elem;
                     }
@@ -339,7 +339,7 @@
                 });
 
                 var newElems = [];
-                bitlib.array.each(self.elements, function(i, elem) {
+                bitlib.array.each(self.elements, function (i, elem) {
                     if (elem.id === prevId) {
                         newElems.push(nextElem);
                     } else if (elem.id === nextId) {
@@ -391,12 +391,12 @@
 
             self = $.extend(self, self.params);
 
-            self.elements.subscribe(function() {
+            self.elements.subscribe(function () {
                 self._setSelectedElementId("");
             });
 
-            self.selectedElement.subscribe(function(selectedElem) {
-                bitlib.array.each(self.elements, function(i, elem) {
+            self.selectedElement.subscribe(function (selectedElem) {
+                bitlib.array.each(self.elements, function (i, elem) {
                     elem.blur();
                 });
 
@@ -405,7 +405,7 @@
                 }
             });
 
-            self.maxPageIndex.subscribe(function(newVal) {
+            self.maxPageIndex.subscribe(function (newVal) {
                 if (newVal < self.selectedPageIndex()) {
                     self._setSelectedPageIndex(0);
                 }
@@ -417,17 +417,17 @@
         var _super = BitWeb.DocumentBase;
         inherits(ListDocumentBase, _super);
 
-        ListDocumentBase.prototype.addElement = function(elem) {
+        ListDocumentBase.prototype.addElement = function (elem) {
             this._addElement(elem);
             return this;
         };
 
-        ListDocumentBase.prototype.clearElements = function() {
+        ListDocumentBase.prototype.clearElements = function () {
             this._clearElements();
             return this;
         };
 
-        ListDocumentBase.prototype.toPrevElement = function() {
+        ListDocumentBase.prototype.toPrevElement = function () {
             var self = this;
 
             if (!self.existsPrevElement()) {
@@ -444,7 +444,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.toNextElement = function() {
+        ListDocumentBase.prototype.toNextElement = function () {
             var self = this;
 
             if (!self.existsNextElement()) {
@@ -461,7 +461,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.toFirstElement = function() {
+        ListDocumentBase.prototype.toFirstElement = function () {
             var self = this;
 
             if (!self.existsPrevElement()) {
@@ -476,7 +476,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.toLastElement = function() {
+        ListDocumentBase.prototype.toLastElement = function () {
             var self = this;
 
             if (!self.existsNextElement()) {
@@ -493,7 +493,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.toPrevPage = function() {
+        ListDocumentBase.prototype.toPrevPage = function () {
             var self = this;
 
             if (!self.existsPrevPage()) {
@@ -510,7 +510,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.toNextPage = function() {
+        ListDocumentBase.prototype.toNextPage = function () {
             var self = this;
 
             if (!self.existsNextPage()) {
@@ -527,7 +527,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.toFirstPage = function() {
+        ListDocumentBase.prototype.toFirstPage = function () {
             var self = this;
 
             if (!self.existsPrevPage()) {
@@ -539,7 +539,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.toLastPage = function() {
+        ListDocumentBase.prototype.toLastPage = function () {
             var self = this;
 
             if (!self.existsNextPage()) {
@@ -551,7 +551,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.toPageAt = function(index) {
+        ListDocumentBase.prototype.toPageAt = function (index) {
             var self = this;
 
             index = bitlib.common.toInteger(index);
@@ -567,7 +567,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.isMovablePageIndex = function(index) {
+        ListDocumentBase.prototype.isMovablePageIndex = function (index) {
             var self = this;
 
             index = bitlib.common.toInteger(index);
@@ -596,7 +596,7 @@
             return (selectedIndex - rangeIndex) < index && index < (selectedIndex - rangeIndex);
         };
 
-        ListDocumentBase.prototype.swapPrevElement = function() {
+        ListDocumentBase.prototype.swapPrevElement = function () {
             var self = this;
 
             var focusedElem = self.selectedElement();
@@ -614,7 +614,7 @@
             return self;
         };
 
-        ListDocumentBase.prototype.swapNextElement = function() {
+        ListDocumentBase.prototype.swapNextElement = function () {
             var self = this;
 
             var focusedElem = self.selectedElement();
@@ -632,7 +632,7 @@
             return self;
         };
 
-        ListDocumentBase.getClassName = function() {
+        ListDocumentBase.getClassName = function () {
             return className;
         };
 
@@ -640,7 +640,7 @@
     }());
 
     bitlib.ko.addBindingHandler("bindScrollableY", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var $container = $(element),
                 $scrollable = $container.children(".bit-ui-scrollable-y").eq(0);
 
@@ -651,16 +651,16 @@
                 scrollableWidth = 0,
                 headerHeight = 0;
 
-            var loopAdjustColumns = function() {
+            var loopAdjustColumns = function () {
                 var width = $scrollable.get(0).clientWidth;
 
                 if (width !== scrollableWidth) {
                     $scrollable
                         .find("table > thead > tr:first-child")
-                        .each(function(i) {
+                        .each(function (i) {
                             $(this)
                                 .children("th")
-                                .each(function(j) {
+                                .each(function (j) {
                                     var span = colSpans[j] || 1,
                                         colWidth = (width * span / spanTotal);
 
@@ -693,7 +693,7 @@
                 if ($tbr.length === 1 && width !== scrollableWidth) {
                     $tbr
                         .children("td")
-                        .each(function(i) {
+                        .each(function (i) {
                             var span = colSpans[i] || 1,
                                 colWidth = (width * span / spanTotal);
 
@@ -726,7 +726,7 @@
             if ($scrollable) {
                 $scrollable
                     .find("table > thead > tr:first-child > th")
-                    .each(function(i) {
+                    .each(function (i) {
                         var spanClass = ($(this)
                                 .attr("class") || "span-1x")
                             .match(/span-[0-9d]+x/i);
@@ -751,7 +751,7 @@
         }
     });
 
-    BitWeb.ListElementBase = (function() {
+    BitWeb.ListElementBase = (function () {
         var className = "ListElementBase";
 
         function ListElementBase(id, params) {
@@ -763,18 +763,18 @@
 
             var isFocused = ko.observable(false);
 
-            self.isFocused = ko.pureComputed(function() {
+            self.isFocused = ko.pureComputed(function () {
                 return isFocused();
             }, self);
 
-            self._focus = function() {
+            self._focus = function () {
                 if (!isFocused()) {
                     isFocused(true);
                 }
                 return self;
             };
 
-            self._blur = function() {
+            self._blur = function () {
                 if (isFocused()) {
                     isFocused(false);
                 }
@@ -788,17 +788,17 @@
         var _super = BitWeb.ResourceBase;
         inherits(ListElementBase, _super);
 
-        ListElementBase.prototype.focus = function() {
+        ListElementBase.prototype.focus = function () {
             this._focus();
             return this;
         };
 
-        ListElementBase.prototype.blur = function() {
+        ListElementBase.prototype.blur = function () {
             this._blur();
             return this;
         };
 
-        ListElementBase.getClassName = function() {
+        ListElementBase.getClassName = function () {
             return className;
         };
 

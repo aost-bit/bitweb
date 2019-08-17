@@ -1,4 +1,4 @@
-﻿(function($) {
+﻿(function ($) {
     "use strict";
 
     // iPad等の初期処理.
@@ -8,10 +8,10 @@
 
 })(jQuery);
 
-(function(BitWeb) {
+(function (BitWeb) {
     "use strict";
 
-    BitWeb.TemplateStyleBase = (function() {
+    BitWeb.TemplateStyleBase = (function () {
         var className = "TemplateStyleBase";
 
         function TemplateStyleBase(params) {
@@ -26,14 +26,14 @@
             return self;
         }
 
-        TemplateStyleBase.getClassName = function() {
+        TemplateStyleBase.getClassName = function () {
             return className;
         };
 
         return TemplateStyleBase;
     }());
 
-    BitWeb.TemplateStyleContainer = (function() {
+    BitWeb.TemplateStyleContainer = (function () {
         var className = "TemplateStyleContainer";
 
         function TemplateStyleContainer() {
@@ -50,7 +50,7 @@
 
             var container = {};
 
-            self._get = function(styleCode) {
+            self._get = function (styleCode) {
                 if (styleCode) {
                     if (container[styleCode]) {
                         return bitlib.common.copy(container[styleCode]);
@@ -62,7 +62,7 @@
                 return null;
             };
 
-            self._set = function(styleCode, newStyle) {
+            self._set = function (styleCode, newStyle) {
                 if (!styleCode || !newStyle) {
                     return self;
                 }
@@ -76,7 +76,7 @@
                 return self;
             };
 
-            self._clear = function() {
+            self._clear = function () {
                 container = {};
                 return self;
             };
@@ -84,28 +84,28 @@
             return self;
         }
 
-        TemplateStyleContainer.prototype.get = function(styleCode) {
+        TemplateStyleContainer.prototype.get = function (styleCode) {
             return this._get(styleCode);
         };
 
-        TemplateStyleContainer.prototype.set = function(styleCode, style) {
+        TemplateStyleContainer.prototype.set = function (styleCode, style) {
             this._set(styleCode, style);
             return this;
         };
 
-        TemplateStyleContainer.prototype.clear = function() {
+        TemplateStyleContainer.prototype.clear = function () {
             this._clear();
             return this;
         };
 
-        TemplateStyleContainer.getClassName = function() {
+        TemplateStyleContainer.getClassName = function () {
             return className;
         };
 
         return TemplateStyleContainer;
     }());
 
-    BitWeb.MetricsBase = (function() {
+    BitWeb.MetricsBase = (function () {
         var className = "MetricsBase";
 
         function MetricsBase(params) {
@@ -129,18 +129,18 @@
 
             var isValidTestMode = ko.observable(self.params.testMode);
 
-            self.isValidTestMode = ko.pureComputed(function() {
+            self.isValidTestMode = ko.pureComputed(function () {
                 return isValidTestMode();
             }, self);
 
-            self._validateTestMode = function() {
+            self._validateTestMode = function () {
                 if (!isValidTestMode()) {
                     isValidTestMode(true);
                 }
                 return self;
             };
 
-            self._invalidateTestMode = function() {
+            self._invalidateTestMode = function () {
                 if (isValidTestMode()) {
                     isValidTestMode(false);
                 }
@@ -151,7 +151,7 @@
 
             var templateStyleCode = ko.observable(self.params.templateStyleCode);
 
-            self._setTemplateStyleCode = function(styleCode) {
+            self._setTemplateStyleCode = function (styleCode) {
                 if (!styleCode || templateStyleCode() === styleCode) {
                     return self;
                 }
@@ -161,25 +161,25 @@
                 return self;
             };
 
-            self.templateStyle = ko.pureComputed(function() {
+            self.templateStyle = ko.pureComputed(function () {
                 var styleCode = templateStyleCode();
                 return templateStyleContainer.get(styleCode);
             }, self);
 
             var isAvailableAutoReload = ko.observable(true);
 
-            self.isAvailableAutoReload = ko.pureComputed(function() {
+            self.isAvailableAutoReload = ko.pureComputed(function () {
                 return isAvailableAutoReload();
             }, self);
 
-            self._enableAutoReload = function() {
+            self._enableAutoReload = function () {
                 if (!isAvailableAutoReload()) {
                     isAvailableAutoReload(true);
                 }
                 return self;
             };
 
-            self._disableAutoReload = function() {
+            self._disableAutoReload = function () {
                 if (isAvailableAutoReload()) {
                     isAvailableAutoReload(false);
                 }
@@ -188,18 +188,18 @@
 
             var isValidAutoReload = ko.observable(self.params.autoReload);
 
-            self.isValidAutoReload = ko.pureComputed(function() {
+            self.isValidAutoReload = ko.pureComputed(function () {
                 return isValidAutoReload();
             }, self);
 
-            self._validateAutoReload = function() {
+            self._validateAutoReload = function () {
                 if (!isValidAutoReload()) {
                     isValidAutoReload(true);
                 }
                 return self;
             };
 
-            self._invalidateAutoReload = function() {
+            self._invalidateAutoReload = function () {
                 if (isValidAutoReload()) {
                     isValidAutoReload(false);
                 }
@@ -209,17 +209,17 @@
             return self;
         }
 
-        MetricsBase.prototype.onTestMode = function() {
+        MetricsBase.prototype.onTestMode = function () {
             this._validateTestMode();
             return this;
         };
 
-        MetricsBase.prototype.offTestMode = function() {
+        MetricsBase.prototype.offTestMode = function () {
             this._invalidateTestMode();
             return this;
         };
 
-        MetricsBase.prototype.switchTestMode = function() {
+        MetricsBase.prototype.switchTestMode = function () {
             var self = this;
 
             if (self.isValidTestMode()) {
@@ -231,27 +231,27 @@
             return self;
         };
 
-        MetricsBase.prototype.enableAutoReload = function() {
+        MetricsBase.prototype.enableAutoReload = function () {
             this._enableAutoReload();
             return this;
         };
 
-        MetricsBase.prototype.disableAutoReload = function() {
+        MetricsBase.prototype.disableAutoReload = function () {
             this._disableAutoReload();
             return this;
         };
 
-        MetricsBase.prototype.onAutoReload = function() {
+        MetricsBase.prototype.onAutoReload = function () {
             this._validateAutoReload();
             return this;
         };
 
-        MetricsBase.prototype.offAutoReload = function() {
+        MetricsBase.prototype.offAutoReload = function () {
             this._invalidateAutoReload();
             return this;
         };
 
-        MetricsBase.prototype.switchAutoReload = function() {
+        MetricsBase.prototype.switchAutoReload = function () {
             var self = this;
 
             if (self.isValidAutoReload()) {
@@ -263,14 +263,14 @@
             return self;
         };
 
-        MetricsBase.getClassName = function() {
+        MetricsBase.getClassName = function () {
             return className;
         };
 
         return MetricsBase;
     }());
 
-    BitWeb.TesterUtilityContainer = (function() {
+    BitWeb.TesterUtilityContainer = (function () {
         var className = "TesterUtilityContainer";
 
         function TesterUtilityContainer() {
@@ -283,25 +283,25 @@
 
             var container = ko.observableArray();
 
-            self.utils = ko.pureComputed(function() {
+            self.utils = ko.pureComputed(function () {
                 return container();
             }, self);
 
-            self._get = function(index) {
+            self._get = function (index) {
                 if (!bitlib.common.isNumber(index)) {
                     return null;
                 }
                 return self.utils()[index];
             };
 
-            self._add = function(caption, callback, owner) {
+            self._add = function (caption, callback, owner) {
                 if (!caption || !bitlib.common.isString(caption) || !bitlib.common.isFunction(callback)) {
                     return self;
                 }
 
                 container.push({
                     caption: caption,
-                    callback: function() {
+                    callback: function () {
                         if ($.testerPicker.isVisible()) {
                             $.testerPicker.close();
                         }
@@ -314,7 +314,7 @@
             };
 
             self
-                ._add("キャッシュをクリアする", function() {
+                ._add("キャッシュをクリアする", function () {
                     bitlib.browser.clearLocalStorage();
 
                     bitlib.ui.lockScreen("すべてのキャッシュをクリアしました.<br />ページを一旦閉じ、開き直してください.");
@@ -323,12 +323,12 @@
             return self;
         }
 
-        TesterUtilityContainer.prototype.add = function(caption, callback, owner) {
+        TesterUtilityContainer.prototype.add = function (caption, callback, owner) {
             this._add(caption, callback, owner);
             return this;
         };
 
-        TesterUtilityContainer.prototype.openPicker = function() {
+        TesterUtilityContainer.prototype.openPicker = function () {
             var self = this;
 
             if ($.testerPicker) {
@@ -338,7 +338,7 @@
             return self;
         };
 
-        TesterUtilityContainer.getClassName = function() {
+        TesterUtilityContainer.getClassName = function () {
             return className;
         };
 
@@ -346,7 +346,7 @@
     }());
 
     bitlib.ko.addBindingHandler("bindHiddenKeys", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var metrics = new BitWeb.MetricsBase();
 
             var i = 0,
@@ -377,7 +377,7 @@
             if (0 < cheetKeyCodes.length) {
                 if (!bitlib.browser.ua.isTablet) {
                     $(window)
-                        .on("keyup", function(event) {
+                        .on("keyup", function (event) {
                             if (currentCheetKeyCodes.length === cheetKeyCodes.length) {
                                 currentCheetKeyCodes.shift();
                             }
@@ -411,7 +411,7 @@
             if (0 < testerKeyCodes.length) {
                 if (!bitlib.browser.ua.isTablet) {
                     $(window)
-                        .on("keyup", function(event) {
+                        .on("keyup", function (event) {
                             if (!metrics.isValidTestMode()) {
                                 return true;
                             }
@@ -441,13 +441,13 @@
             $(element).testerPicker(options);
 
             // handle disposal (if KO removes by the template binding)
-            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
                 $(element).testerPicker("destroy");
             });
         }
     });
 
-    BitWeb.DocumentBase = (function() {
+    BitWeb.DocumentBase = (function () {
         var className = "DocumentBase";
 
         var READY = "READY",
@@ -467,27 +467,27 @@
 
             var status = ko.observable(READY);
 
-            self.isReady = ko.pureComputed(function() {
+            self.isReady = ko.pureComputed(function () {
                 return status() === READY;
             }, self);
 
-            self.isBusy = ko.pureComputed(function() {
+            self.isBusy = ko.pureComputed(function () {
                 return status() === LOADING;
             }, self);
 
-            self.isCompleted = ko.pureComputed(function() {
+            self.isCompleted = ko.pureComputed(function () {
                 return status() === DONE;
             }, self);
 
-            self.isTimeout = ko.pureComputed(function() {
+            self.isTimeout = ko.pureComputed(function () {
                 return status() === TIMEOUT;
             }, self);
 
-            self.isError = ko.pureComputed(function() {
+            self.isError = ko.pureComputed(function () {
                 return status() === ERROR;
             }, self);
 
-            self._setStatus = function(newStatus) {
+            self._setStatus = function (newStatus) {
                 if (status() !== newStatus) {
                     status(newStatus);
                 }
@@ -506,7 +506,7 @@
                 return self;
             }
 
-            self._startAutoReload = function() {
+            self._startAutoReload = function () {
                 if (!!tick || metrics.params.reloadInterval < 10000) {
                     return self;
                 }
@@ -516,7 +516,7 @@
                 return self;
             };
 
-            self._stopAutoReload = function() {
+            self._stopAutoReload = function () {
                 if (tick) {
                     clearTimeout(tick);
                     tick = null;
@@ -526,13 +526,13 @@
 
             self = $.extend(self, self.params);
 
-            self.isCompleted.subscribe(function(isCompleted) {
+            self.isCompleted.subscribe(function (isCompleted) {
                 if (isCompleted) {
                     if (metrics.isValidAutoReload()) {
                         self._startAutoReload();
                     }
 
-                    metrics.isValidAutoReload.subscribe(function(isValid) {
+                    metrics.isValidAutoReload.subscribe(function (isValid) {
                         if (isValid) {
                             self._startAutoReload();
                         } else {
@@ -548,11 +548,11 @@
         var _super = BitWeb.ResourceBase;
         inherits(DocumentBase, _super);
 
-        DocumentBase.prototype.template = function(prefix, suffix) {
+        DocumentBase.prototype.template = function (prefix, suffix) {
             return (prefix || "") + this.type + (suffix || "") + "Template";
         };
 
-        DocumentBase.prototype.ready = function() {
+        DocumentBase.prototype.ready = function () {
             var message = "DocumentBase の初期 binding 処理はオーバーライドして使用してください.\n" +
                 "Promise オブジェクトを返すと、binding 初期化を非同期に処理することが可能です.";
 
@@ -561,14 +561,14 @@
             return $.Deferred().resolve().promise();
         };
 
-        DocumentBase.prototype.init = function() {
+        DocumentBase.prototype.init = function () {
             var message = "DocumentBase の初期化処理はオーバーライドして使用してください.\n" +
                 "この初期化処理は applyBinding された後のビューモデルに対して行う処理になります.";
 
             bitlib.logger.info(message);
         };
 
-        DocumentBase.prototype.load = function(params) {
+        DocumentBase.prototype.load = function (params) {
             var self = this,
                 defer = $.Deferred();
 
@@ -584,14 +584,14 @@
 
             params = $.extend({
                 timeout: (15 * 1000),
-                timeoutHandler: function() {
+                timeoutHandler: function () {
                     bitlib.logger.warn("timeout.");
                 }
             }, (params || {}));
 
             var tick = null;
 
-            tick = setTimeout(function() {
+            tick = setTimeout(function () {
                 if (defer.state() === "pending") {
                     self._setStatus(TIMEOUT);
 
@@ -604,14 +604,14 @@
             }, params.timeout);
 
             promise
-                .done(function() {
+                .done(function () {
                     self._setStatus(DONE);
                     if (tick) {
                         clearTimeout(tick);
                     }
                     defer.resolve(self);
                 })
-                .fail(function() {
+                .fail(function () {
                     self._setStatus(ERROR);
                     if (tick) {
                         clearTimeout(tick);
@@ -622,11 +622,11 @@
             return defer.promise();
         };
 
-        DocumentBase.prototype.reload = function() {
+        DocumentBase.prototype.reload = function () {
             bitlib.logger.info("再ロード処理はオーバーライドして使用してください.");
         };
 
-        DocumentBase.getClassName = function() {
+        DocumentBase.getClassName = function () {
             return className;
         };
 
@@ -634,7 +634,7 @@
     }());
 
     bitlib.ko.addBindingHandler("bindHeader", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var options = $.extend({
                 fixed: false,
                 toggle: false
@@ -645,7 +645,7 @@
             var tick = null,
                 headerHeight = $(element).outerHeight();
 
-            var loopFixPosition = function() {
+            var loopFixPosition = function () {
                 var height = $(element).outerHeight();
                 if (height !== headerHeight) {
                     $page
@@ -685,7 +685,7 @@
     });
 
     bitlib.ko.addBindingHandler("bindFooter", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var options = $.extend({
                 fixed: false,
                 toggle: false
@@ -696,7 +696,7 @@
             var tick = null,
                 footerHeight = $(element).outerHeight();
 
-            var loopFixPosition = function() {
+            var loopFixPosition = function () {
                 var height = $(element).outerHeight();
                 if (height !== footerHeight) {
                     $page

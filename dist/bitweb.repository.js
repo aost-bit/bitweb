@@ -1,7 +1,7 @@
-﻿(function(BitWeb) {
+﻿(function (BitWeb) {
     "use strict";
 
-    BitWeb.RepositoryBase = (function() {
+    BitWeb.RepositoryBase = (function () {
         var className = "RepositoryBase";
 
         function RepositoryBase(params) {
@@ -13,21 +13,21 @@
 
             var changedTimes = 0;
 
-            self._getChangedTimes = function() {
+            self._getChangedTimes = function () {
                 return changedTimes;
             };
 
             var source = [];
 
-            self._getSourceLength = function() {
+            self._getSourceLength = function () {
                 return source.length;
             };
 
-            self._getAllSources = function() {
+            self._getAllSources = function () {
                 return bitlib.common.copy(source);
             };
 
-            self._addSource = function(newSource) {
+            self._addSource = function (newSource) {
                 newSource = newSource || [];
                 newSource = bitlib.common.isArray(newSource) ? newSource : [newSource];
 
@@ -42,29 +42,29 @@
                 return self;
             };
 
-            self._clearSources = function() {
+            self._clearSources = function () {
                 source = [];
                 return self;
             };
 
             self = $.extend(self, self.params);
 
-            self.observable.subscribe(function() {
+            self.observable.subscribe(function () {
                 changedTimes++;
             });
 
             return self;
         }
 
-        RepositoryBase.prototype.getChangedTimes = function() {
+        RepositoryBase.prototype.getChangedTimes = function () {
             return this._getChangedTimes();
         };
 
-        RepositoryBase.prototype.getSourceLength = function() {
+        RepositoryBase.prototype.getSourceLength = function () {
             return this._getSourceLength();
         };
 
-        RepositoryBase.prototype.getSource = function(begin, end) {
+        RepositoryBase.prototype.getSource = function (begin, end) {
             var source = this._getAllSources();
 
             begin = begin || 0;
@@ -73,19 +73,19 @@
             return source.slice(begin, end);
         };
 
-        RepositoryBase.prototype.addSource = function(source) {
+        RepositoryBase.prototype.addSource = function (source) {
             this._addSource(source);
             return this;
         };
 
-        RepositoryBase.getClassName = function() {
+        RepositoryBase.getClassName = function () {
             return className;
         };
 
         return RepositoryBase;
     }());
 
-    BitWeb.MasterRepositoryBase = (function() {
+    BitWeb.MasterRepositoryBase = (function () {
         var className = "MasterRepositoryBase";
 
         var READY = "READY",
@@ -98,23 +98,23 @@
 
             var status = ko.observable(READY);
 
-            self.isReady = ko.pureComputed(function() {
+            self.isReady = ko.pureComputed(function () {
                 return status() === READY;
             }, self);
 
-            self.isLoading = ko.pureComputed(function() {
+            self.isLoading = ko.pureComputed(function () {
                 return status() === LOADING;
             }, self);
 
-            self.isLoaded = ko.pureComputed(function() {
+            self.isLoaded = ko.pureComputed(function () {
                 return status() === LOADED;
             }, self);
 
-            self.isTimeout = ko.pureComputed(function() {
+            self.isTimeout = ko.pureComputed(function () {
                 return status() === TIMEOUT;
             }, self);
 
-            self._setStatus = function(newStatus) {
+            self._setStatus = function (newStatus) {
                 if (status() !== newStatus) {
                     status(newStatus);
                 }
@@ -123,22 +123,22 @@
 
             var master = [];
 
-            self._getMasterLength = function() {
+            self._getMasterLength = function () {
                 return master.length;
             };
 
-            self._getAllMasters = function() {
+            self._getAllMasters = function () {
                 return bitlib.common.copy(master);
             };
 
-            self._clearMasters = function() {
+            self._clearMasters = function () {
                 master = [];
                 return self;
             };
 
             var filterPolicies = [];
 
-            self._addFilterPolicy = function(newPolicies) {
+            self._addFilterPolicy = function (newPolicies) {
                 newPolicies = newPolicies || [];
                 newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
 
@@ -157,7 +157,7 @@
                 return self;
             };
 
-            self._clearFilterPolicies = function() {
+            self._clearFilterPolicies = function () {
                 filterPolicies = [];
                 return self;
             };
@@ -171,7 +171,7 @@
 
                 var cloneMaster = bitlib.common.copy(originalMaster);
 
-                bitlib.array.each(filterPolicies, function(i, policy) {
+                bitlib.array.each(filterPolicies, function (i, policy) {
                     cloneMaster = policy(cloneMaster);
                 });
 
@@ -180,14 +180,14 @@
 
             var sortPolicy;
 
-            self._setSortPolicy = function(newPolicy) {
+            self._setSortPolicy = function (newPolicy) {
                 if (bitlib.common.isFunction(newPolicy)) {
                     sortPolicy = newPolicy;
                 }
                 return self;
             };
 
-            self._deleteSortPolicy = function() {
+            self._deleteSortPolicy = function () {
                 sortPolicy = undefined;
                 return self;
             };
@@ -205,7 +205,7 @@
                 return cloneMaster;
             }
 
-            self._applyPolicies = function() {
+            self._applyPolicies = function () {
                 var originalMaster = self._getAllSources();
 
                 originalMaster = applyFilterPolicies(originalMaster);
@@ -225,21 +225,21 @@
         var _super = BitWeb.RepositoryBase;
         inherits(MasterRepositoryBase, _super);
 
-        MasterRepositoryBase.prototype.loading = function() {
+        MasterRepositoryBase.prototype.loading = function () {
             this._setStatus(LOADING);
             return this;
         };
 
-        MasterRepositoryBase.prototype.loaded = function() {
+        MasterRepositoryBase.prototype.loaded = function () {
             this._setStatus(LOADED);
             return this;
         };
 
-        MasterRepositoryBase.prototype.createNullObject = function() {
+        MasterRepositoryBase.prototype.createNullObject = function () {
             return {};
         };
 
-        MasterRepositoryBase.prototype.isNullObject = function(obj) {
+        MasterRepositoryBase.prototype.isNullObject = function (obj) {
             if (!obj || !bitlib.common.isObject(obj)) {
                 return false;
             }
@@ -252,11 +252,11 @@
             return false;
         };
 
-        MasterRepositoryBase.prototype.getMasterLength = function() {
+        MasterRepositoryBase.prototype.getMasterLength = function () {
             return this._getMasterLength();
         };
 
-        MasterRepositoryBase.prototype.getMaster = function(begin, end) {
+        MasterRepositoryBase.prototype.getMaster = function (begin, end) {
             var master = this._getAllMasters();
 
             begin = begin || 0;
@@ -265,7 +265,7 @@
             return master.slice(begin, end);
         };
 
-        MasterRepositoryBase.prototype.getFallbackMaster = function() {
+        MasterRepositoryBase.prototype.getFallbackMaster = function () {
             var self = this;
 
             if (0 < self._getMasterLength()) {
@@ -276,7 +276,7 @@
         };
 
         // 指定した条件を満たすレコードを取得する.
-        MasterRepositoryBase.prototype.select = function(pred) {
+        MasterRepositoryBase.prototype.select = function (pred) {
             var master = this._getAllMasters();
 
             if (!pred || !bitlib.common.isFunction(pred)) {
@@ -293,7 +293,7 @@
             return results;
         };
 
-        MasterRepositoryBase.prototype.clear = function() {
+        MasterRepositoryBase.prototype.clear = function () {
             this
                 ._clearMasters()
                 ._clearSources();
@@ -301,32 +301,32 @@
             return this;
         };
 
-        MasterRepositoryBase.prototype.applyPolicies = function() {
+        MasterRepositoryBase.prototype.applyPolicies = function () {
             this._applyPolicies();
             return this;
         };
 
-        MasterRepositoryBase.prototype.addFilterPolicy = function(policy) {
+        MasterRepositoryBase.prototype.addFilterPolicy = function (policy) {
             this._addFilterPolicy(policy);
             return this;
         };
 
-        MasterRepositoryBase.prototype.clearFilterPolicies = function() {
+        MasterRepositoryBase.prototype.clearFilterPolicies = function () {
             this._clearFilterPolicies();
             return this;
         };
 
-        MasterRepositoryBase.prototype.setSortPolicy = function(policy) {
+        MasterRepositoryBase.prototype.setSortPolicy = function (policy) {
             this._setSortPolicy(policy);
             return this;
         };
 
-        MasterRepositoryBase.prototype.deleteSortPolicy = function() {
+        MasterRepositoryBase.prototype.deleteSortPolicy = function () {
             this._deleteSortPolicy();
             return this;
         };
 
-        MasterRepositoryBase.prototype.load = function(master) {
+        MasterRepositoryBase.prototype.load = function (master) {
             var self = this,
                 defer = $.Deferred();
 
@@ -335,7 +335,7 @@
             }
 
             if (self.isLoading()) {
-                self.isLoaded.subscribe(function() {
+                self.isLoaded.subscribe(function () {
                     defer.resolve();
                 });
 
@@ -354,14 +354,14 @@
             return defer.resolve().promise();
         };
 
-        MasterRepositoryBase.getClassName = function() {
+        MasterRepositoryBase.getClassName = function () {
             return className;
         };
 
         return MasterRepositoryBase;
     }());
 
-    BitWeb.DataRepositoryBase = (function() {
+    BitWeb.DataRepositoryBase = (function () {
         var className = "DataRepositoryBase";
 
         function DataRepositoryBase() {
@@ -369,22 +369,22 @@
 
             var data = [];
 
-            self._getDataLength = function() {
+            self._getDataLength = function () {
                 return data.length;
             };
 
-            self._getAllDatas = function() {
+            self._getAllDatas = function () {
                 return bitlib.common.copy(data);
             };
 
-            self._clearDatas = function() {
+            self._clearDatas = function () {
                 data = [];
                 return self;
             };
 
             var filterPolicies = [];
 
-            self._addFilterPolicy = function(newPolicies) {
+            self._addFilterPolicy = function (newPolicies) {
                 newPolicies = newPolicies || [];
                 newPolicies = bitlib.common.isArray(newPolicies) ? newPolicies : [newPolicies];
 
@@ -403,7 +403,7 @@
                 return self;
             };
 
-            self._clearFilterPolicies = function() {
+            self._clearFilterPolicies = function () {
                 filterPolicies = [];
                 return self;
             };
@@ -417,7 +417,7 @@
 
                 var cloneData = bitlib.common.copy(originalData);
 
-                bitlib.array.each(filterPolicies, function(i, policy) {
+                bitlib.array.each(filterPolicies, function (i, policy) {
                     cloneData = policy(cloneData);
                 });
 
@@ -426,14 +426,14 @@
 
             var sortPolicy;
 
-            self._setSortPolicy = function(newPolicy) {
+            self._setSortPolicy = function (newPolicy) {
                 if (bitlib.common.isFunction(newPolicy)) {
                     sortPolicy = newPolicy;
                 }
                 return self;
             };
 
-            self._deleteSortPolicy = function() {
+            self._deleteSortPolicy = function () {
                 sortPolicy = undefined;
                 return self;
             };
@@ -451,7 +451,7 @@
                 return cloneData;
             }
 
-            self._applyPolicies = function() {
+            self._applyPolicies = function () {
                 var originalData = self._getAllSources();
 
                 originalData = applyFilterPolicies(originalData);
@@ -471,11 +471,11 @@
         var _super = BitWeb.RepositoryBase;
         inherits(DataRepositoryBase, _super);
 
-        DataRepositoryBase.prototype.getDataLength = function() {
+        DataRepositoryBase.prototype.getDataLength = function () {
             return this._getDataLength();
         };
 
-        DataRepositoryBase.prototype.getData = function(begin, end) {
+        DataRepositoryBase.prototype.getData = function (begin, end) {
             var data = this._getAllDatas();
 
             begin = begin || 0;
@@ -484,7 +484,7 @@
             return data.slice(begin, end);
         };
 
-        DataRepositoryBase.prototype.clear = function() {
+        DataRepositoryBase.prototype.clear = function () {
             this
                 ._clearDatas()
                 ._clearSources();
@@ -492,32 +492,32 @@
             return this;
         };
 
-        DataRepositoryBase.prototype.applyPolicies = function() {
+        DataRepositoryBase.prototype.applyPolicies = function () {
             this._applyPolicies();
             return this;
         };
 
-        DataRepositoryBase.prototype.addFilterPolicy = function(policy) {
+        DataRepositoryBase.prototype.addFilterPolicy = function (policy) {
             this._addFilterPolicy(policy);
             return this;
         };
 
-        DataRepositoryBase.prototype.clearFilterPolicies = function() {
+        DataRepositoryBase.prototype.clearFilterPolicies = function () {
             this._clearFilterPolicies();
             return this;
         };
 
-        DataRepositoryBase.prototype.setSortPolicy = function(policy) {
+        DataRepositoryBase.prototype.setSortPolicy = function (policy) {
             this._setSortPolicy(policy);
             return this;
         };
 
-        DataRepositoryBase.prototype.deleteSortPolicy = function() {
+        DataRepositoryBase.prototype.deleteSortPolicy = function () {
             this._deleteSortPolicy();
             return this;
         };
 
-        DataRepositoryBase.getClassName = function() {
+        DataRepositoryBase.getClassName = function () {
             return className;
         };
 

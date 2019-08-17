@@ -1,7 +1,7 @@
-﻿(function(BitWeb) {
+﻿(function (BitWeb) {
     "use strict";
 
-    BitWeb.ResourceBase = (function() {
+    BitWeb.ResourceBase = (function () {
         var className = "ResourceBase";
 
         function ResourceBase(params) {
@@ -15,18 +15,18 @@
 
             var isAvailable = ko.observable(true);
 
-            self.isAvailable = ko.pureComputed(function() {
+            self.isAvailable = ko.pureComputed(function () {
                 return isAvailable();
             }, self);
 
-            self._enable = function() {
+            self._enable = function () {
                 if (!isAvailable()) {
                     isAvailable(true);
                 }
                 return self;
             };
 
-            self._disable = function() {
+            self._disable = function () {
                 if (isAvailable()) {
                     isAvailable(false);
                 }
@@ -35,18 +35,18 @@
 
             var isValid = ko.observable(false);
 
-            self.isValid = ko.pureComputed(function() {
+            self.isValid = ko.pureComputed(function () {
                 return isValid();
             }, self);
 
-            self._validate = function() {
+            self._validate = function () {
                 if (!isValid()) {
                     isValid(true);
                 }
                 return self;
             };
 
-            self._invalidate = function() {
+            self._invalidate = function () {
                 if (isValid()) {
                     isValid(false);
                 }
@@ -55,18 +55,18 @@
 
             var isVisible = ko.observable(true);
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return isVisible();
             }, self);
 
-            self._visible = function() {
+            self._visible = function () {
                 if (!isVisible()) {
                     isVisible(true);
                 }
                 return self;
             };
 
-            self._invisible = function() {
+            self._invisible = function () {
                 if (isVisible()) {
                     isVisible(false);
                 }
@@ -77,37 +77,37 @@
             return self;
         }
 
-        ResourceBase.prototype.enable = function() {
+        ResourceBase.prototype.enable = function () {
             this._enable();
             return this;
         };
 
-        ResourceBase.prototype.disable = function() {
+        ResourceBase.prototype.disable = function () {
             this._disable();
             return this;
         };
 
-        ResourceBase.prototype.validate = function() {
+        ResourceBase.prototype.validate = function () {
             this._validate();
             return this;
         };
 
-        ResourceBase.prototype.invalidate = function() {
+        ResourceBase.prototype.invalidate = function () {
             this._invalidate();
             return this;
         };
 
-        ResourceBase.prototype.show = function() {
+        ResourceBase.prototype.show = function () {
             this._visible();
             return this;
         };
 
-        ResourceBase.prototype.hide = function() {
+        ResourceBase.prototype.hide = function () {
             this._invisible();
             return this;
         };
 
-        ResourceBase.getClassName = function() {
+        ResourceBase.getClassName = function () {
             return className;
         };
 

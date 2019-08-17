@@ -1,7 +1,7 @@
-﻿(function(BitWeb) {
+﻿(function (BitWeb) {
     "use strict";
 
-    BitWeb.CalendarStyleBase = (function() {
+    BitWeb.CalendarStyleBase = (function () {
         var className = "CalendarStyleBase";
 
         function CalendarStyleBase(params) {
@@ -17,34 +17,34 @@
             return self;
         }
 
-        CalendarStyleBase.prototype.getCalendarRange = function(date) {
+        CalendarStyleBase.prototype.getCalendarRange = function (date) {
             bitlib.logger.error("CalendarStyleBase 派生クラスで CalendarRange を生成してください.");
             return null;
         };
 
-        CalendarStyleBase.prototype.applyCalendarRange = function(date, callback) {
+        CalendarStyleBase.prototype.applyCalendarRange = function (date, callback) {
             bitlib.logger.error("CalendarStyleBase 派生クラスで CalendarRange への適用処理を実装してください.");
             return this;
         };
 
-        CalendarStyleBase.prototype.getPrevRange = function(date) {
+        CalendarStyleBase.prototype.getPrevRange = function (date) {
             bitlib.logger.error("CalendarStyleBase 派生クラスで getPrevRange を実装してください.");
             return null;
         };
 
-        CalendarStyleBase.prototype.getNextRange = function(date) {
+        CalendarStyleBase.prototype.getNextRange = function (date) {
             bitlib.logger.error("CalendarStyleBase 派生クラスで getNextRange を実装してください.");
             return null;
         };
 
-        CalendarStyleBase.getClassName = function() {
+        CalendarStyleBase.getClassName = function () {
             return className;
         };
 
         return CalendarStyleBase;
     }());
 
-    BitWeb.CalendarMonthStyle = (function() {
+    BitWeb.CalendarMonthStyle = (function () {
         var className = "CalendarMonthStyle";
 
         function CalendarMonthStyle() {
@@ -58,7 +58,7 @@
         var _super = BitWeb.CalendarStyleBase;
         inherits(CalendarMonthStyle, _super);
 
-        CalendarMonthStyle.prototype.getCalendarRange = function(date) {
+        CalendarMonthStyle.prototype.getCalendarRange = function (date) {
             if (!bitlib.common.isValidDate(date)) {
                 return null;
             }
@@ -69,7 +69,7 @@
             });
         };
 
-        CalendarMonthStyle.prototype.applyCalendarRange = function(date, callback) {
+        CalendarMonthStyle.prototype.applyCalendarRange = function (date, callback) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date) || !bitlib.common.isFunction(callback)) {
@@ -91,28 +91,28 @@
             return self;
         };
 
-        CalendarMonthStyle.prototype.getPrevRange = function(date) {
+        CalendarMonthStyle.prototype.getPrevRange = function (date) {
             if (!bitlib.common.isValidDate(date)) {
                 return null;
             }
             return moment(date).subtract("month", 1).toDate();
         };
 
-        CalendarMonthStyle.prototype.getNextRange = function(date) {
+        CalendarMonthStyle.prototype.getNextRange = function (date) {
             if (!bitlib.common.isValidDate(date)) {
                 return null;
             }
             return moment(date).add("month", 1).toDate();
         };
 
-        CalendarMonthStyle.getClassName = function() {
+        CalendarMonthStyle.getClassName = function () {
             return className;
         };
 
         return CalendarMonthStyle;
     }());
 
-    BitWeb.CalendarWeekStyle = (function() {
+    BitWeb.CalendarWeekStyle = (function () {
         var className = "CalendarWeekStyle";
 
         function CalendarWeekStyle() {
@@ -124,7 +124,7 @@
         var _super = BitWeb.CalendarStyleBase;
         inherits(CalendarWeekStyle, _super);
 
-        CalendarWeekStyle.prototype.getCalendarRange = function(date) {
+        CalendarWeekStyle.prototype.getCalendarRange = function (date) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date)) {
@@ -137,7 +137,7 @@
             });
         };
 
-        CalendarWeekStyle.prototype.applyCalendarRange = function(date, callback) {
+        CalendarWeekStyle.prototype.applyCalendarRange = function (date, callback) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date) || !bitlib.common.isFunction(callback)) {
@@ -159,7 +159,7 @@
             return self;
         };
 
-        CalendarWeekStyle.prototype.getPrevRange = function(date) {
+        CalendarWeekStyle.prototype.getPrevRange = function (date) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date)) {
@@ -169,7 +169,7 @@
             return moment(date).subtract("weeks", self.numberOfUnits || 1).toDate();
         };
 
-        CalendarWeekStyle.prototype.getNextRange = function(date) {
+        CalendarWeekStyle.prototype.getNextRange = function (date) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date)) {
@@ -179,14 +179,14 @@
             return moment(date).add("weeks", self.numberOfUnits || 1).toDate();
         };
 
-        CalendarWeekStyle.getClassName = function() {
+        CalendarWeekStyle.getClassName = function () {
             return className;
         };
 
         return CalendarWeekStyle;
     }());
 
-    BitWeb.CalendarDayStyle = (function() {
+    BitWeb.CalendarDayStyle = (function () {
         var className = "CalendarDayStyle";
 
         function CalendarDayStyle() {
@@ -198,7 +198,7 @@
         var _super = BitWeb.CalendarStyleBase;
         inherits(CalendarDayStyle, _super);
 
-        CalendarDayStyle.prototype.getCalendarRange = function(date) {
+        CalendarDayStyle.prototype.getCalendarRange = function (date) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date)) {
@@ -211,7 +211,7 @@
             });
         };
 
-        CalendarDayStyle.prototype.applyCalendarRange = function(date, callback) {
+        CalendarDayStyle.prototype.applyCalendarRange = function (date, callback) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date) || !bitlib.common.isFunction(callback)) {
@@ -233,7 +233,7 @@
             return self;
         };
 
-        CalendarDayStyle.prototype.getPrevRange = function(date) {
+        CalendarDayStyle.prototype.getPrevRange = function (date) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date)) {
@@ -243,7 +243,7 @@
             return moment(date).subtract("days", self.numberOfUnits || 1).toDate();
         };
 
-        CalendarDayStyle.prototype.getNextRange = function(date) {
+        CalendarDayStyle.prototype.getNextRange = function (date) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date)) {
@@ -253,14 +253,14 @@
             return moment(date).add("days", self.numberOfUnits || 1).toDate();
         };
 
-        CalendarDayStyle.getClassName = function() {
+        CalendarDayStyle.getClassName = function () {
             return className;
         };
 
         return CalendarDayStyle;
     }());
 
-    BitWeb.CalendarStyleContainer = (function() {
+    BitWeb.CalendarStyleContainer = (function () {
         var className = "CalendarStyleContainer";
 
         function CalendarStyleContainer() {
@@ -276,7 +276,7 @@
 
             var container = {};
 
-            self._get = function(styleCode) {
+            self._get = function (styleCode) {
                 if (styleCode) {
                     if (container[styleCode]) {
                         return bitlib.common.copy(container[styleCode]);
@@ -288,7 +288,7 @@
                 return null;
             };
 
-            self._set = function(styleCode, newStyle) {
+            self._set = function (styleCode, newStyle) {
                 if (!styleCode || !newStyle) {
                     return self;
                 }
@@ -302,7 +302,7 @@
                 return self;
             };
 
-            self._clear = function() {
+            self._clear = function () {
                 container = {};
                 return self;
             };
@@ -310,28 +310,28 @@
             return self;
         }
 
-        CalendarStyleContainer.prototype.get = function(styleCode) {
+        CalendarStyleContainer.prototype.get = function (styleCode) {
             return this._get(styleCode);
         };
 
-        CalendarStyleContainer.prototype.set = function(styleCode, style) {
+        CalendarStyleContainer.prototype.set = function (styleCode, style) {
             this._set(styleCode, style);
             return this;
         };
 
-        CalendarStyleContainer.prototype.clear = function() {
+        CalendarStyleContainer.prototype.clear = function () {
             this._clear();
             return this;
         };
 
-        CalendarStyleContainer.getClassName = function() {
+        CalendarStyleContainer.getClassName = function () {
             return className;
         };
 
         return CalendarStyleContainer;
     }());
 
-    BitWeb.CalendarMetricsBase = (function() {
+    BitWeb.CalendarMetricsBase = (function () {
         var className = "CalendarMetricsBase";
 
         var dateTimeCorrector = new BitWeb.DateTimeCorrector();
@@ -391,18 +391,18 @@
 
             var showEveryday = ko.observable(self.params.showEveryday);
 
-            self.showEveryday = ko.pureComputed(function() {
+            self.showEveryday = ko.pureComputed(function () {
                 return showEveryday();
             }, self);
 
-            self._showEveryday = function() {
+            self._showEveryday = function () {
                 if (!showEveryday()) {
                     showEveryday(true);
                 }
                 return self;
             };
 
-            self._hideEveryday = function() {
+            self._hideEveryday = function () {
                 if (showEveryday()) {
                     showEveryday(false);
                 }
@@ -412,10 +412,10 @@
             var focusedDate = ko.observable(self.params.initDate);
 
             self.focusedDate = ko.computed({
-                read: function() {
+                read: function () {
                     return focusedDate();
                 },
-                write: function(newValue) {
+                write: function (newValue) {
                     var currentDate = moment(newValue);
 
                     if (!self.showEveryday()) {
@@ -442,11 +442,11 @@
 
             var calendarStyleCode = ko.observable(self.params.calendarStyleCode);
 
-            self.calendarStyleCode = ko.pureComputed(function() {
+            self.calendarStyleCode = ko.pureComputed(function () {
                 return calendarStyleCode();
             }, self);
 
-            self._setCalendarStyleCode = function(styleCode) {
+            self._setCalendarStyleCode = function (styleCode) {
                 if (!styleCode || calendarStyleCode() === styleCode) {
                     return self;
                 }
@@ -456,21 +456,21 @@
                 return self;
             };
 
-            self.calendarStyle = ko.pureComputed(function() {
+            self.calendarStyle = ko.pureComputed(function () {
                 return calendarStyleContainer.get(calendarStyleCode());
             }, self);
 
-            self.calendarStyleParams = ko.pureComputed(function() {
+            self.calendarStyleParams = ko.pureComputed(function () {
                 return self.params.calendarStyle[calendarStyleCode()];
             }, self);
 
             var calendarTimeRange = ko.observable(self.params.calendarTimeRange[self.params.initTimeRangeIndex]);
 
-            self.calendarTimeRange = ko.pureComputed(function() {
+            self.calendarTimeRange = ko.pureComputed(function () {
                 return calendarTimeRange();
             }, self);
 
-            self._setCalendarTimeRange = function(timeRange) {
+            self._setCalendarTimeRange = function (timeRange) {
                 if (!timeRange || calendarTimeRange() === timeRange) {
                     return self;
                 }
@@ -480,7 +480,7 @@
                 return self;
             };
 
-            self.viewportTimeRange = ko.pureComputed(function() {
+            self.viewportTimeRange = ko.pureComputed(function () {
                 var range = calendarTimeRange() || "00:00-24:00";
 
                 var arr = range.split("-");
@@ -494,7 +494,7 @@
                 });
             }, self);
 
-            self.timeHeaderDials = ko.pureComputed(function() {
+            self.timeHeaderDials = ko.pureComputed(function () {
                 var params = self.calendarStyleParams(),
                     range = self.viewportTimeRange();
 
@@ -514,7 +514,7 @@
                 return dials;
             }, self);
 
-            self.timeDials = ko.pureComputed(function() {
+            self.timeDials = ko.pureComputed(function () {
                 var params = self.calendarStyleParams(),
                     range = self.viewportTimeRange();
 
@@ -537,7 +537,7 @@
                 return dials;
             }, self);
 
-            self.isValidCurrentAxis = ko.pureComputed(function() {
+            self.isValidCurrentAxis = ko.pureComputed(function () {
                 return bitlib.common.toBoolean(self.calendarStyleParams().useCurrentAxis);
             }, self);
 
@@ -547,7 +547,7 @@
         var _super = BitWeb.GridMetricsBase;
         inherits(CalendarMetricsBase, _super);
 
-        CalendarMetricsBase.prototype.getPrevRange = function(date) {
+        CalendarMetricsBase.prototype.getPrevRange = function (date) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date)) {
@@ -557,7 +557,7 @@
             return self.calendarStyle().getPrevRange(date);
         };
 
-        CalendarMetricsBase.prototype.getNextRange = function(date) {
+        CalendarMetricsBase.prototype.getNextRange = function (date) {
             var self = this;
 
             if (!bitlib.common.isValidDate(date)) {
@@ -567,7 +567,7 @@
             return self.calendarStyle().getNextRange(date);
         };
 
-        CalendarMetricsBase.prototype.isToday = function(date) {
+        CalendarMetricsBase.prototype.isToday = function (date) {
             if (!bitlib.common.isValidDate(date)) {
                 return false;
             }
@@ -577,7 +577,7 @@
             return moment(now).format("YYYYMMDD") === moment(date).format("YYYYMMDD");
         };
 
-        CalendarMetricsBase.prototype.hasCurrentAxis = function(date) {
+        CalendarMetricsBase.prototype.hasCurrentAxis = function (date) {
             var self = this;
 
             if (!self.isToday(date)) {
@@ -595,14 +595,14 @@
             return !(now < bRange || eRange < now);
         };
 
-        CalendarMetricsBase.getClassName = function() {
+        CalendarMetricsBase.getClassName = function () {
             return className;
         };
 
         return CalendarMetricsBase;
     }());
 
-    BitWeb.CalendarDocumentBase = (function() {
+    BitWeb.CalendarDocumentBase = (function () {
         var className = "CalendarDocumentBase";
 
         var metrics;
@@ -621,7 +621,7 @@
         var _super = BitWeb.GridDocumentBase;
         inherits(CalendarDocumentBase, _super);
 
-        CalendarDocumentBase.prototype.publishCalendar = function() {
+        CalendarDocumentBase.prototype.publishCalendar = function () {
             var self = this;
 
             self.clearTables();
@@ -630,7 +630,7 @@
 
             metrics
                 .calendarStyle()
-                .applyCalendarRange(metrics.focusedDate(), function(range) {
+                .applyCalendarRange(metrics.focusedDate(), function (range) {
                     tables.push(new BitWeb.CalendarTable(range));
                 });
 
@@ -643,14 +643,14 @@
             return self;
         };
 
-        CalendarDocumentBase.getClassName = function() {
+        CalendarDocumentBase.getClassName = function () {
             return className;
         };
 
         return CalendarDocumentBase;
     }());
 
-    BitWeb.CalendarTable = (function() {
+    BitWeb.CalendarTable = (function () {
         var className = "CalendarTable";
 
         function CalendarTable(range, params) {
@@ -662,7 +662,7 @@
 
             var mapper = new BitWeb.CalendarCellMapper();
 
-            self._getCell = function(row, col) {
+            self._getCell = function (row, col) {
                 if (!row || !col) {
                     return undefined;
                 }
@@ -684,7 +684,7 @@
         var _super = BitWeb.GridTableBase;
         inherits(CalendarTable, _super);
 
-        CalendarTable.prototype.applyRange = function() {
+        CalendarTable.prototype.applyRange = function () {
             var self = this;
 
             self.clearColumns();
@@ -708,11 +708,11 @@
             return self;
         };
 
-        CalendarTable.prototype.getVisibleHeaderRows = function() {
+        CalendarTable.prototype.getVisibleHeaderRows = function () {
             var self = this;
 
             var rows = [];
-            bitlib.array.each(self.visibleRows, function(i, row) {
+            bitlib.array.each(self.visibleRows, function (i, row) {
                 if (row.isCalendarHeaderRowViewModel) {
                     rows.push(row);
                 }
@@ -721,11 +721,11 @@
             return rows;
         };
 
-        CalendarTable.prototype.getVisibleDataRows = function() {
+        CalendarTable.prototype.getVisibleDataRows = function () {
             var self = this;
 
             var rows = [];
-            bitlib.array.each(self.visibleRows, function(i, row) {
+            bitlib.array.each(self.visibleRows, function (i, row) {
                 if (!row.isCalendarHeaderRowViewModel) {
                     rows.push(row);
                 }
@@ -734,14 +734,14 @@
             return rows;
         };
 
-        CalendarTable.getClassName = function() {
+        CalendarTable.getClassName = function () {
             return className;
         };
 
         return CalendarTable;
     }());
 
-    BitWeb.CalendarRowBase = (function() {
+    BitWeb.CalendarRowBase = (function () {
         var className = "CalendarRowBase";
 
         function CalendarRowBase() {
@@ -758,14 +758,14 @@
         var _super = BitWeb.GridRowBase;
         inherits(CalendarRowBase, _super);
 
-        CalendarRowBase.getClassName = function() {
+        CalendarRowBase.getClassName = function () {
             return className;
         };
 
         return CalendarRowBase;
     }());
 
-    BitWeb.CalendarColumn = (function() {
+    BitWeb.CalendarColumn = (function () {
         var className = "CalendarColumn";
 
         function CalendarColumn(initDate, params) {
@@ -781,15 +781,15 @@
 
             self.type = className;
 
-            self.isValid = ko.pureComputed(function() {
+            self.isValid = ko.pureComputed(function () {
                 return true;
             }, self);
 
-            self._validate = function() {
+            self._validate = function () {
                 return self;
             };
 
-            self._invalidate = function() {
+            self._invalidate = function () {
                 return self;
             };
 
@@ -802,14 +802,14 @@
         var _super = BitWeb.GridColumnBase;
         inherits(CalendarColumn, _super);
 
-        CalendarColumn.getClassName = function() {
+        CalendarColumn.getClassName = function () {
             return className;
         };
 
         return CalendarColumn;
     }());
 
-    BitWeb.CalendarCellMapper = (function() {
+    BitWeb.CalendarCellMapper = (function () {
         var className = "CalendarCellMapper";
 
         function CalendarCellMapper() {
@@ -821,7 +821,7 @@
         var _super = BitWeb.GridCellMapperBase;
         inherits(CalendarCellMapper, _super);
 
-        CalendarCellMapper.prototype.createCell = function(row, col) {
+        CalendarCellMapper.prototype.createCell = function (row, col) {
             var self = this;
 
             if (!row || !col) {
@@ -854,14 +854,14 @@
             return self;
         };
 
-        CalendarCellMapper.getClassName = function() {
+        CalendarCellMapper.getClassName = function () {
             return className;
         };
 
         return CalendarCellMapper;
     }());
 
-    BitWeb.CalendarCellBase = (function() {
+    BitWeb.CalendarCellBase = (function () {
         var className = "CalendarCellBase";
 
         function CalendarCellBase() {
@@ -876,14 +876,14 @@
         var _super = BitWeb.GridCellBase;
         inherits(CalendarCellBase, _super);
 
-        CalendarCellBase.getClassName = function() {
+        CalendarCellBase.getClassName = function () {
             return className;
         };
 
         return CalendarCellBase;
     }());
 
-    BitWeb.CalendarHeaderRowBase = (function() {
+    BitWeb.CalendarHeaderRowBase = (function () {
         var className = "CalendarHeaderRowBase";
 
         function CalendarHeaderRowBase() {
@@ -895,7 +895,7 @@
 
             var dataRows = ko.observableArray();
 
-            self._addDataRow = function(newRows) {
+            self._addDataRow = function (newRows) {
                 newRows = newRows || [];
                 newRows = bitlib.common.isArray(newRows) ? newRows : [newRows];
 
@@ -914,23 +914,23 @@
                 return self;
             };
 
-            self.isValid = ko.pureComputed(function() {
+            self.isValid = ko.pureComputed(function () {
                 var rows = dataRows();
 
                 if (rows.length === 0) {
                     return false;
                 }
 
-                return bitlib.array.any(rows, function(i, row) {
+                return bitlib.array.any(rows, function (i, row) {
                     return row.isValid();
                 });
             }, self);
 
-            self._validate = function() {
+            self._validate = function () {
                 return self;
             };
 
-            self._invalidate = function() {
+            self._invalidate = function () {
                 return self;
             };
 
@@ -941,19 +941,19 @@
         var _super = BitWeb.CalendarRowBase;
         inherits(CalendarHeaderRowBase, _super);
 
-        CalendarHeaderRowBase.prototype.bindDataRows = function(rows) {
+        CalendarHeaderRowBase.prototype.bindDataRows = function (rows) {
             this._addDataRow(rows);
             return this;
         };
 
-        CalendarHeaderRowBase.getClassName = function() {
+        CalendarHeaderRowBase.getClassName = function () {
             return className;
         };
 
         return CalendarHeaderRowBase;
     }());
 
-    BitWeb.CalendarHeaderRow = (function() {
+    BitWeb.CalendarHeaderRow = (function () {
         var className = "CalendarHeaderRow";
 
         function CalendarHeaderRow() {
@@ -968,14 +968,14 @@
         var _super = BitWeb.CalendarHeaderRowBase;
         inherits(CalendarHeaderRow, _super);
 
-        CalendarHeaderRow.getClassName = function() {
+        CalendarHeaderRow.getClassName = function () {
             return className;
         };
 
         return CalendarHeaderRow;
     }());
 
-    BitWeb.CalendarHeaderCell = (function() {
+    BitWeb.CalendarHeaderCell = (function () {
         var className = "CalendarHeaderCell";
 
         function CalendarHeaderCell() {
@@ -995,7 +995,7 @@
         var _super = BitWeb.CalendarCellBase;
         inherits(CalendarHeaderCell, _super);
 
-        CalendarHeaderCell.getClassName = function() {
+        CalendarHeaderCell.getClassName = function () {
             return className;
         };
 
@@ -1003,7 +1003,7 @@
     }());
 
     bitlib.ko.addBindingHandler("bindCalendarHeaderCell", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var metrics = new BitWeb.CalendarMetricsBase(),
                 $element = $(element);
 
@@ -1032,7 +1032,7 @@
         }
     });
 
-    BitWeb.CalendarTimeHeaderRow = (function() {
+    BitWeb.CalendarTimeHeaderRow = (function () {
         var className = "CalendarTimeHeaderRow";
 
         function CalendarTimeHeaderRow() {
@@ -1049,14 +1049,14 @@
         var _super = BitWeb.CalendarHeaderRowBase;
         inherits(CalendarTimeHeaderRow, _super);
 
-        CalendarTimeHeaderRow.getClassName = function() {
+        CalendarTimeHeaderRow.getClassName = function () {
             return className;
         };
 
         return CalendarTimeHeaderRow;
     }());
 
-    BitWeb.CalendarTimeHeaderCell = (function() {
+    BitWeb.CalendarTimeHeaderCell = (function () {
         var className = "CalendarTimeHeaderCell";
 
         function CalendarTimeHeaderCell() {
@@ -1071,7 +1071,7 @@
         var _super = BitWeb.CalendarCellBase;
         inherits(CalendarTimeHeaderCell, _super);
 
-        CalendarTimeHeaderCell.getClassName = function() {
+        CalendarTimeHeaderCell.getClassName = function () {
             return className;
         };
 
@@ -1079,7 +1079,7 @@
     }());
 
     bitlib.ko.addBindingHandler("bindTimeHeaderDial", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var metrics = new BitWeb.CalendarMetricsBase();
 
             var duration = metrics.viewportTimeRange().getDuration(),
@@ -1095,7 +1095,7 @@
     });
 
     bitlib.ko.addBindingHandler("bindTimeDial", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var $element = $(element),
                 metrics = new BitWeb.CalendarMetricsBase();
 
@@ -1120,7 +1120,7 @@
     });
 
     bitlib.ko.addBindingHandler("bindCurrentAxis", {
-        init: function(element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
             var $element = $(element),
                 metrics = new BitWeb.CalendarMetricsBase();
 
@@ -1156,7 +1156,7 @@
 
                 if (0 < len) {
                     $element
-                        .on("mousemove", function(event) {
+                        .on("mousemove", function (event) {
                             event = event || window.event;
 
                             var index = bitlib.common.toInteger((len * event.offsetX) / (((100 * $(this).width()) / width) + 1));
@@ -1168,7 +1168,7 @@
                                 $timeAxis.eq(pIndex).trigger("mouseenter");
                             }
                         })
-                        .on("mouseleave", function() {
+                        .on("mouseleave", function () {
                             $timeAxis.eq(pIndex).trigger("mouseleave");
 
                             pIndex = -1;

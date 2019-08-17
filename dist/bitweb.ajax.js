@@ -1,7 +1,7 @@
-﻿(function(BitWeb) {
+﻿(function (BitWeb) {
     "use strict";
 
-    BitWeb.RequestDispatcher = (function() {
+    BitWeb.RequestDispatcher = (function () {
         var className = "RequestDispatcher";
 
         var url = "/webservice";
@@ -16,11 +16,11 @@
             // serviceProxy... 送信する要求メッセージと各種ハンドラ
             var serviceProxy = {};
 
-            self._getProxy = function() {
+            self._getProxy = function () {
                 return bitlib.common.copy(serviceProxy);
             };
 
-            self._setProxy = function(newService, message) {
+            self._setProxy = function (newService, message) {
                 if (!newService || !message) {
                     return self;
                 }
@@ -33,7 +33,7 @@
                 return self;
             };
 
-            self._clearProxy = function() {
+            self._clearProxy = function () {
                 serviceProxy = {};
                 return self;
             };
@@ -41,17 +41,17 @@
             return self;
         }
 
-        RequestDispatcher.prototype.set = function(service, message) {
+        RequestDispatcher.prototype.set = function (service, message) {
             this._setProxy(service, message);
             return this;
         };
 
-        RequestDispatcher.prototype.clear = function() {
+        RequestDispatcher.prototype.clear = function () {
             this._clearProxy();
             return this;
         };
 
-        RequestDispatcher.prototype.sendOnline = function(options, disconnectHandler) {
+        RequestDispatcher.prototype.sendOnline = function (options, disconnectHandler) {
             var self = this,
                 defer = $.Deferred();
 
@@ -64,7 +64,7 @@
                 cacheResult: false
             }, (options || {}));
 
-            disconnectHandler = disconnectHandler || function() {
+            disconnectHandler = disconnectHandler || function () {
                 bitlib.logger.warn("ネットワークアクセスに失敗しました. 接続をご確認ください.");
                 return defer.resolve().promise();
             };
@@ -76,10 +76,10 @@
 
                 if (promise) {
                     promise
-                        .done(function() {
+                        .done(function () {
                             defer.resolve();
                         })
-                        .fail(function() {
+                        .fail(function () {
                             defer.reject();
                         });
                 } else {
@@ -98,7 +98,7 @@
             }
 
             promise
-                .done(function(data) {
+                .done(function (data) {
                     var replyHandler = proxy.service.publishReplyHandler(proxy.message);
                     replyHandler(data);
 
@@ -109,7 +109,7 @@
 
                     defer.resolve();
                 })
-                .fail(function(XMLHttpRequest, textStatus, errorThrown) {
+                .fail(function (XMLHttpRequest, textStatus, errorThrown) {
                     var errorHandler = proxy.service.publishErrorHandler(proxy.message);
                     errorHandler(XMLHttpRequest, textStatus, errorThrown);
 
@@ -122,7 +122,7 @@
         // alias
         RequestDispatcher.prototype.send = RequestDispatcher.prototype.sendOnline;
 
-        RequestDispatcher.prototype.sendOffline = function(options) {
+        RequestDispatcher.prototype.sendOffline = function (options) {
             var self = this,
                 defer = $.Deferred();
 
@@ -147,11 +147,11 @@
             return defer.resolve().promise();
         };
 
-        RequestDispatcher.getClassName = function() {
+        RequestDispatcher.getClassName = function () {
             return className;
         };
 
-        RequestDispatcher.setUrl = function(newUrl) {
+        RequestDispatcher.setUrl = function (newUrl) {
             if (!newUrl && !bitlib.common.isString(newUrl)) {
                 return false;
             }
@@ -164,7 +164,7 @@
         return RequestDispatcher;
     }());
 
-    BitWeb.RequestMessenger = (function() {
+    BitWeb.RequestMessenger = (function () {
         var className = "RequestMessenger";
 
         var READY = "READY",
@@ -181,23 +181,23 @@
 
             var status = ko.observable(READY);
 
-            self.isReady = ko.pureComputed(function() {
+            self.isReady = ko.pureComputed(function () {
                 return status() === READY;
             }, self);
 
-            self.isBusy = ko.pureComputed(function() {
+            self.isBusy = ko.pureComputed(function () {
                 return status() === SENDING;
             }, self);
 
-            self.isCompleted = ko.pureComputed(function() {
+            self.isCompleted = ko.pureComputed(function () {
                 return status() === DONE;
             }, self);
 
-            self.isTimeout = ko.pureComputed(function() {
+            self.isTimeout = ko.pureComputed(function () {
                 return status() === TIMEOUT;
             }, self);
 
-            self._setStatus = function(newStatus) {
+            self._setStatus = function (newStatus) {
                 if (status() !== newStatus) {
                     status(newStatus);
                 }
@@ -206,11 +206,11 @@
 
             var dispatcherProxies = [];
 
-            self._getAllDispatcherProxies = function() {
+            self._getAllDispatcherProxies = function () {
                 return bitlib.common.copy(dispatcherProxies);
             };
 
-            self._addDispatcherProxy = function(newDispatcher, options, disconnectHandler) {
+            self._addDispatcherProxy = function (newDispatcher, options, disconnectHandler) {
                 if (!newDispatcher) {
                     return self;
                 }
@@ -229,7 +229,7 @@
                 return self;
             };
 
-            self._clearDisptcherProxies = function() {
+            self._clearDisptcherProxies = function () {
                 dispatcherProxies = [];
                 return self;
             };
@@ -237,17 +237,17 @@
             return self;
         }
 
-        RequestMessenger.prototype.hasDispatcher = function() {
+        RequestMessenger.prototype.hasDispatcher = function () {
             var proxies = this._getAllDispatcherProxies();
             return 0 < proxies.length;
         };
 
-        RequestMessenger.prototype.add = function(newDispatcher, options, disconnectHandler) {
+        RequestMessenger.prototype.add = function (newDispatcher, options, disconnectHandler) {
             this._addDispatcherProxy(newDispatcher, options, disconnectHandler);
             return this;
         };
 
-        RequestMessenger.prototype.addOnline = function(newDispatcher, options, disconnectHandler) {
+        RequestMessenger.prototype.addOnline = function (newDispatcher, options, disconnectHandler) {
             options = $.extend((options || {}), {
                 offline: false
             });
@@ -257,7 +257,7 @@
             return this;
         };
 
-        RequestMessenger.prototype.addOffline = function(newDispatcher, options) {
+        RequestMessenger.prototype.addOffline = function (newDispatcher, options) {
             options = $.extend((options || {}), {
                 offline: true
             });
@@ -267,17 +267,17 @@
             return this;
         };
 
-        RequestMessenger.prototype.clear = function() {
+        RequestMessenger.prototype.clear = function () {
             this._clearDisptcherProxies();
             return this;
         };
 
-        RequestMessenger.prototype.complete = function() {
+        RequestMessenger.prototype.complete = function () {
             this._setStatus(DONE);
             return this;
         };
 
-        RequestMessenger.prototype.send = function(options) {
+        RequestMessenger.prototype.send = function (options) {
             var self = this,
                 defer = $.Deferred();
 
@@ -307,24 +307,24 @@
             }
 
             $.when.apply($, promises)
-                .done(function() {
+                .done(function () {
                     defer.resolve();
                 })
-                .fail(function() {
+                .fail(function () {
                     defer.reject();
                 });
 
             return defer.promise();
         };
 
-        RequestMessenger.getClassName = function() {
+        RequestMessenger.getClassName = function () {
             return className;
         };
 
         return RequestMessenger;
     }());
 
-    BitWeb.ServiceBase = (function() {
+    BitWeb.ServiceBase = (function () {
         var className = "ServiceBase";
 
         function ServiceBase(serviceName) {
@@ -335,7 +335,7 @@
             return self;
         }
 
-        ServiceBase.prototype.createMessage = function(action, params) {
+        ServiceBase.prototype.createMessage = function (action, params) {
             action = action || "";
             params = params || {};
 
@@ -348,49 +348,49 @@
             };
         };
 
-        ServiceBase.prototype.publishReplyHandler = function(request) {
+        ServiceBase.prototype.publishReplyHandler = function (request) {
             var self = this;
 
-            return function(reply) {
+            return function (reply) {
                 return self.replyHandler(reply.request, reply.response);
             };
         };
 
-        ServiceBase.prototype.replyHandler = function(request, response) {
+        ServiceBase.prototype.replyHandler = function (request, response) {
             var message = "[WARN] " + this.serviceName + "は" +
                 "応答メッセージの受信処理 replyHandler を実装しなければなりません。";
 
             bitlib.logger.warn(message);
         };
 
-        ServiceBase.prototype.publishCacheHandler = function(request) {
+        ServiceBase.prototype.publishCacheHandler = function (request) {
             var self = this;
 
-            return function(reply) {
+            return function (reply) {
                 return self.cacheHandler(reply.request, reply.response);
             }
         };
 
-        ServiceBase.prototype.cacheHandler = function(request, response) {
+        ServiceBase.prototype.cacheHandler = function (request, response) {
             // none
         };
 
-        ServiceBase.prototype.publishErrorHandler = function(request) {
+        ServiceBase.prototype.publishErrorHandler = function (request) {
             var self = this;
 
-            return function(XMLHttpRequest, textStatus, errorThrown) {
+            return function (XMLHttpRequest, textStatus, errorThrown) {
                 return self.errorHandler(XMLHttpRequest, textStatus, errorThrown);
             };
         };
 
-        ServiceBase.prototype.errorHandler = function(XMLHttpRequest, textStatus, errorThrown) {
+        ServiceBase.prototype.errorHandler = function (XMLHttpRequest, textStatus, errorThrown) {
             bitlib.logger.error("[UNHENDLED ERROR] " + textStatus + errorThrown);
         };
 
-        ServiceBase.prototype.publishOfflineRequestHandler = function() {
+        ServiceBase.prototype.publishOfflineRequestHandler = function () {
             var self = this;
 
-            return function(request) {
+            return function (request) {
                 // 要求メッセージの keys/type の値からオフライン時の処理名を生成.
                 //     例： "get" -> "getOffline"
                 // ただし "load-by-date" など、ハイフンを含むとメソッド名として不適格.
@@ -400,7 +400,7 @@
                 var serviceName = request.service_name,
                     type = request.keys.type;
 
-                var handlerName = type.replace(/-+([^-])/g, function(matches, pattern) {
+                var handlerName = type.replace(/-+([^-])/g, function (matches, pattern) {
                     return pattern.toUpperCase();
                 });
 
@@ -422,11 +422,11 @@
             };
         };
 
-        ServiceBase.getClassName = function() {
+        ServiceBase.getClassName = function () {
             return className;
         };
 
-        ServiceBase.getServiceName = function() {
+        ServiceBase.getServiceName = function () {
             var message = "[ERROR] " + className + "は" +
                 "サービス名を取得するための getServiceName を実装しなければなりません。";
 

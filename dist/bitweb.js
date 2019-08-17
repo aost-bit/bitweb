@@ -1,4 +1,4 @@
-﻿(function(globals) {
+﻿(function (globals) {
     "use strict";
 
     // for namespace 'BitWeb' defined.

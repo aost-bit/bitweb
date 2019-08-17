@@ -1,7 +1,7 @@
-﻿(function(BitWeb) {
+﻿(function (BitWeb) {
     "use strict";
 
-    BitWeb.DialogWidget = (function() {
+    BitWeb.DialogWidget = (function () {
         var className = "DialogWidget";
 
         function DialogWidget(params) {
@@ -19,29 +19,31 @@
             self.dialog = undefined;
 
             self.owner = ko.observable();
-            self.callback = function() { return true; };
+            self.callback = function () {
+                return true;
+            };
 
             var isVisible = ko.observable(false);
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return isVisible();
             }, self);
 
-            self._visible = function() {
+            self._visible = function () {
                 if (!isVisible()) {
                     isVisible(true);
                 }
                 return self;
             };
 
-            self._invisible = function() {
+            self._invisible = function () {
                 if (isVisible()) {
                     isVisible(false);
                 }
                 return self;
             };
 
-            self._open = function() {
+            self._open = function () {
                 self._invisible();
 
                 if (self.dialog) {
@@ -53,7 +55,7 @@
                 return self;
             };
 
-            self._close = function() {
+            self._close = function () {
                 if (self.dialog) {
                     self.dialog.customDialog("close");
                 }
@@ -67,7 +69,7 @@
             return self;
         }
 
-        DialogWidget.prototype.open = function(owner, closeHandler) {
+        DialogWidget.prototype.open = function (owner, closeHandler) {
             var self = this;
 
             if (!owner) {
@@ -85,7 +87,7 @@
             return self;
         };
 
-        DialogWidget.prototype.ok = function() {
+        DialogWidget.prototype.ok = function () {
             var self = this;
 
             var closable = self.callback.apply(self, [self.owner()]);
@@ -96,19 +98,19 @@
             return self;
         };
 
-        DialogWidget.prototype.cancel = function() {
+        DialogWidget.prototype.cancel = function () {
             this._close();
             return this;
         };
 
-        DialogWidget.getClassName = function() {
+        DialogWidget.getClassName = function () {
             return className;
         };
 
         return DialogWidget;
     }());
 
-    BitWeb.DialogWidgetFactory = (function() {
+    BitWeb.DialogWidgetFactory = (function () {
         var className = "DialogWidgetFactory";
 
         function DialogWidgetWrapper() {
@@ -120,11 +122,11 @@
 
             self.owner = undefined; // DialogWidget
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return self.owner.isVisible();
             }, self);
 
-            self.open = function(owner, closeHandler) {
+            self.open = function (owner, closeHandler) {
                 self.owner.open(owner, closeHandler);
 
                 if (self.owner.options.alignCenter) {
@@ -152,11 +154,11 @@
                 }
             };
 
-            self.ok = function() {
+            self.ok = function () {
                 self.owner.ok();
             };
 
-            self.cancel = function() {
+            self.cancel = function () {
                 self.owner.cancel();
             };
 
@@ -178,11 +180,11 @@
             return self;
         }
 
-        DialogWidgetFactory.getClassName = function() {
+        DialogWidgetFactory.getClassName = function () {
             return className;
         };
 
-        DialogWidgetFactory.create = function(widgetName, options) {
+        DialogWidgetFactory.create = function (widgetName, options) {
             if (!widgetName) {
                 bitlib.logger.error("widget が指定されていません.");
                 return null;
@@ -202,10 +204,10 @@
                 modal: true,
                 resizable: false,
                 buttons: {
-                    "ＯＫ": function() {
+                    "ＯＫ": function () {
                         $[widgetName].ok();
                     },
-                    "ｷｬﾝｾﾙ": function() {
+                    "ｷｬﾝｾﾙ": function () {
                         $[widgetName].cancel();
                     }
                 },
@@ -221,11 +223,11 @@
             }, (options || {}));
 
             if (bitlib.common.isNullOrUndefined(options.open) && bitlib.common.isNullOrUndefined(options.close) && !bitlib.common.toBoolean(options.overflow)) {
-                options.open = function() {
+                options.open = function () {
                     $("body").css("overflow", "hidden");
                 };
 
-                options.close = function() {
+                options.close = function () {
                     $("body").css("overflow", "visible");
                 };
             }
@@ -235,7 +237,7 @@
                 template = widgetName + "Template";
 
             $.widget("BitWeb." + widgetName, {
-                _create: function() {
+                _create: function () {
                     if ($[widgetName].initialized === true) {
                         // 生成済み
                         return;
@@ -263,13 +265,13 @@
                     this.initDialog();
                     $[widgetName].initialized = true;
                 },
-                _init: function() {
+                _init: function () {
                     // 初期化
                 },
-                _destroy: function() {
+                _destroy: function () {
                     // 破棄... singleton なので特に何もしない
                 },
-                initDialog: function() {
+                initDialog: function () {
                     var $divNode = $("#" + dialogId);
 
                     ko.cleanNode($divNode[0]); // knockout 2.3.0 update 対応.[You cannot apply bindings multiple times to the same element]
@@ -279,14 +281,14 @@
 
                     dialogWidget.dialog = $divNode;
                 },
-                open: function() {
+                open: function () {
                     var owner = ko.dataFor(this.element[0]);
                     $[widgetName].open(owner);
                 },
-                ok: function() {
+                ok: function () {
                     $[widgetName].ok();
                 },
-                cancel: function() {
+                cancel: function () {
                     $[widgetName].cancel();
                 },
                 options: options
@@ -301,7 +303,7 @@
         return DialogWidgetFactory;
     }());
 
-    BitWeb.ViewboxWidget = (function() {
+    BitWeb.ViewboxWidget = (function () {
         var className = "ViewboxWidget";
 
         function ViewboxWidget(params) {
@@ -319,29 +321,31 @@
             self.viewbox = undefined;
 
             self.owner = ko.observable();
-            self.callback = function() { return true; };
+            self.callback = function () {
+                return true;
+            };
 
             var isVisible = ko.observable(false);
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return isVisible();
             }, self);
 
-            self._visible = function() {
+            self._visible = function () {
                 if (!isVisible()) {
                     isVisible(true);
                 }
                 return self;
             };
 
-            self._invisible = function() {
+            self._invisible = function () {
                 if (isVisible()) {
                     isVisible(false);
                 }
                 return self;
             };
 
-            self._open = function() {
+            self._open = function () {
                 self._invisible();
 
                 if (self.viewbox) {
@@ -353,7 +357,7 @@
                 return self;
             };
 
-            self._close = function() {
+            self._close = function () {
                 if (self.viewbox) {
                     self.viewbox.customDialog("close");
                 }
@@ -367,7 +371,7 @@
             return self;
         }
 
-        ViewboxWidget.prototype.open = function(owner, closeHandler) {
+        ViewboxWidget.prototype.open = function (owner, closeHandler) {
             var self = this;
 
             if (!owner) {
@@ -385,7 +389,7 @@
             return self;
         };
 
-        ViewboxWidget.prototype.ok = function() {
+        ViewboxWidget.prototype.ok = function () {
             var self = this;
 
             var closable = self.callback.apply(self, [self.owner()]);
@@ -396,19 +400,19 @@
             return self;
         };
 
-        ViewboxWidget.prototype.close = function() {
+        ViewboxWidget.prototype.close = function () {
             this._close();
             return this;
         };
 
-        ViewboxWidget.getClassName = function() {
+        ViewboxWidget.getClassName = function () {
             return className;
         };
 
         return ViewboxWidget;
     }());
 
-    BitWeb.ViewboxWidgetFactory = (function() {
+    BitWeb.ViewboxWidgetFactory = (function () {
         var className = "ViewboxWidgetFactory";
 
         function ViewboxWidgetWrapper() {
@@ -420,11 +424,11 @@
 
             self.owner = undefined; // ViewboxWidget
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return self.owner.isVisible();
             }, self);
 
-            self.open = function(owner, closeHandler) {
+            self.open = function (owner, closeHandler) {
                 self.owner.open(owner, closeHandler);
 
                 if (self.owner.options.alignCenter) {
@@ -452,11 +456,11 @@
                 }
             };
 
-            self.ok = function() {
+            self.ok = function () {
                 self.owner.ok();
             };
 
-            self.close = function() {
+            self.close = function () {
                 self.owner.close();
             };
 
@@ -478,11 +482,11 @@
             return self;
         }
 
-        ViewboxWidgetFactory.getClassName = function() {
+        ViewboxWidgetFactory.getClassName = function () {
             return className;
         };
 
-        ViewboxWidgetFactory.create = function(widgetName, options) {
+        ViewboxWidgetFactory.create = function (widgetName, options) {
             if (!widgetName) {
                 bitlib.logger.error("widget が指定されていません.");
                 return null;
@@ -502,7 +506,7 @@
                 modal: true,
                 resizable: false,
                 buttons: {
-                    "閉じる": function() {
+                    "閉じる": function () {
                         $[widgetName].close();
                     }
                 },
@@ -518,11 +522,11 @@
             }, (options || {}));
 
             if (bitlib.common.isNullOrUndefined(options.open) && bitlib.common.isNullOrUndefined(options.close) && !bitlib.common.toBoolean(options.overflow)) {
-                options.open = function() {
+                options.open = function () {
                     $("body").css("overflow", "hidden");
                 };
 
-                options.close = function() {
+                options.close = function () {
                     $("body").css("overflow", "visible");
                 };
             }
@@ -532,7 +536,7 @@
                 template = widgetName + "Template";
 
             $.widget("BitWeb." + widgetName, {
-                _create: function() {
+                _create: function () {
                     if ($[widgetName].initialized === true) {
                         // 生成済み
                         return;
@@ -560,13 +564,13 @@
                     this.initViewbox();
                     $[widgetName].initialized = true;
                 },
-                _init: function() {
+                _init: function () {
                     // 初期化
                 },
-                _destroy: function() {
+                _destroy: function () {
                     // 破棄... singleton なので特に何もしない
                 },
-                initViewbox: function() {
+                initViewbox: function () {
                     var $divNode = $("#" + viewboxId);
 
                     ko.cleanNode($divNode[0]); // knockout 2.3.0 update 対応.[You cannot apply bindings multiple times to the same element]
@@ -576,14 +580,14 @@
 
                     viewboxWidget.viewbox = $divNode;
                 },
-                open: function() {
+                open: function () {
                     var owner = ko.dataFor(this.element[0]);
                     $[widgetName].open(owner);
                 },
-                ok: function() {
+                ok: function () {
                     $[widgetName].ok();
                 },
-                close: function() {
+                close: function () {
                     $[widgetName].close();
                 },
                 options: options
@@ -598,7 +602,7 @@
         return ViewboxWidgetFactory;
     }());
 
-    BitWeb.OverlayWidget = (function() {
+    BitWeb.OverlayWidget = (function () {
         var className = "OverlayWidget";
 
         function OverlayWidget(params) {
@@ -616,22 +620,24 @@
             self.overlay = undefined;
 
             self.owner = ko.observable();
-            self.callback = function() { return true; };
+            self.callback = function () {
+                return true;
+            };
 
             var isVisible = ko.observable(false);
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return isVisible();
             }, self);
 
-            self._visible = function() {
+            self._visible = function () {
                 if (!isVisible()) {
                     isVisible(true);
                 }
                 return self;
             };
 
-            self._invisible = function() {
+            self._invisible = function () {
                 if (isVisible()) {
                     isVisible(false);
                 }
@@ -640,7 +646,7 @@
 
             var timeIn = false; // 誤操作防止用フラグ
 
-            self._open = function() {
+            self._open = function () {
                 self._invisible();
 
                 if (self.overlay) {
@@ -648,7 +654,7 @@
 
                     self.overlay.fadeIn("fast");
 
-                    setTimeout(function() {
+                    setTimeout(function () {
                         timeIn = true;
                     }, 500);
                 }
@@ -662,7 +668,7 @@
                 return self;
             };
 
-            self._close = function() {
+            self._close = function () {
                 if (!timeIn) {
                     return self;
                 }
@@ -684,7 +690,7 @@
             return self;
         }
 
-        OverlayWidget.prototype.open = function(owner, closeHandler) {
+        OverlayWidget.prototype.open = function (owner, closeHandler) {
             var self = this;
 
             if (!owner) {
@@ -702,7 +708,7 @@
             return self;
         };
 
-        OverlayWidget.prototype.ok = function() {
+        OverlayWidget.prototype.ok = function () {
             var self = this;
 
             var closable = self.callback.apply(self, [self.owner()]);
@@ -713,19 +719,19 @@
             return self;
         };
 
-        OverlayWidget.prototype.close = function() {
+        OverlayWidget.prototype.close = function () {
             this._close();
             return this;
         };
 
-        OverlayWidget.getClassName = function() {
+        OverlayWidget.getClassName = function () {
             return className;
         };
 
         return OverlayWidget;
     }());
 
-    BitWeb.OverlayWidgetFactory = (function() {
+    BitWeb.OverlayWidgetFactory = (function () {
         var className = "OverlayWidgetFactory";
 
         function OverlayWidgetWrapper() {
@@ -737,11 +743,11 @@
 
             self.owner = undefined; // OverlayWidget
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return self.owner.isVisible();
             }, self);
 
-            self.open = function(owner, closeHandler) {
+            self.open = function (owner, closeHandler) {
                 var $document = $(document);
 
                 $("#" + self.owner.id)
@@ -774,11 +780,11 @@
                     });
             };
 
-            self.ok = function() {
+            self.ok = function () {
                 self.owner.ok();
             };
 
-            self.close = function() {
+            self.close = function () {
                 self.owner.close();
             };
 
@@ -800,11 +806,11 @@
             return self;
         }
 
-        OverlayWidgetFactory.getClassName = function() {
+        OverlayWidgetFactory.getClassName = function () {
             return className;
         };
 
-        OverlayWidgetFactory.create = function(widgetName, options) {
+        OverlayWidgetFactory.create = function (widgetName, options) {
             if (!widgetName) {
                 bitlib.logger.error("widget が指定されていません.");
                 return null;
@@ -826,7 +832,7 @@
                 template = widgetName + "Template";
 
             $.widget("BitWeb." + widgetName, {
-                _create: function() {
+                _create: function () {
                     if ($[widgetName].initialized === true) {
                         // 生成済み
                         return;
@@ -867,13 +873,13 @@
                     this.initOverlay();
                     $[widgetName].initialized = true;
                 },
-                _init: function() {
+                _init: function () {
                     // 初期化
                 },
-                _destroy: function() {
+                _destroy: function () {
                     // 破棄... singleton なので特に何もしない
                 },
-                initOverlay: function() {
+                initOverlay: function () {
                     var $divNode = $("#" + overlayId);
 
                     ko.cleanNode($divNode[0]); // knockout 2.3.0 update 対応.[You cannot apply bindings multiple times to the same element]
@@ -881,14 +887,14 @@
 
                     overlayWidget.overlay = $divNode;
                 },
-                open: function() {
+                open: function () {
                     var owner = ko.dataFor(this.element[0]);
                     $[widgetName].open(owner);
                 },
-                ok: function() {
+                ok: function () {
                     $[widgetName].ok();
                 },
-                close: function() {
+                close: function () {
                     $[widgetName].close();
                 },
                 options: options
@@ -903,7 +909,7 @@
         return OverlayWidgetFactory;
     }());
 
-    BitWeb.PopupWidget = (function() {
+    BitWeb.PopupWidget = (function () {
         var className = "PopupWidget";
 
         function PopupWidget(params) {
@@ -924,25 +930,25 @@
 
             var isVisible = ko.observable(false);
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return isVisible();
             }, self);
 
-            self._visible = function() {
+            self._visible = function () {
                 if (!isVisible()) {
                     isVisible(true);
                 }
                 return self;
             };
 
-            self._invisible = function() {
+            self._invisible = function () {
                 if (isVisible()) {
                     isVisible(false);
                 }
                 return self;
             };
 
-            self._open = function() {
+            self._open = function () {
                 self._invisible();
 
                 if (self.popup) {
@@ -954,7 +960,7 @@
                 return self;
             };
 
-            self._close = function() {
+            self._close = function () {
                 if (self.popup) {
                     self.popup.hide();
                 }
@@ -968,7 +974,7 @@
             return self;
         }
 
-        PopupWidget.prototype.open = function(owner) {
+        PopupWidget.prototype.open = function (owner) {
             var self = this;
 
             if (!owner) {
@@ -982,19 +988,19 @@
             return self;
         };
 
-        PopupWidget.prototype.close = function() {
+        PopupWidget.prototype.close = function () {
             this._close();
             return this;
         };
 
-        PopupWidget.getClassName = function() {
+        PopupWidget.getClassName = function () {
             return className;
         };
 
         return PopupWidget;
     }());
 
-    BitWeb.PopupWidgetFactory = (function() {
+    BitWeb.PopupWidgetFactory = (function () {
         var className = "PopupWidgetFactory";
 
         function PopupWidgetWrapper() {
@@ -1006,11 +1012,11 @@
 
             self.owner = undefined; // PopupWidget
 
-            self.isVisible = ko.pureComputed(function() {
+            self.isVisible = ko.pureComputed(function () {
                 return self.owner.isVisible();
             }, self);
 
-            self.open = function(owner) {
+            self.open = function (owner) {
                 var windowHalfWidth = $(window).width() / 2.0;
                 var windowHalfHeight = $(window).height() / 2.0;
 
@@ -1041,7 +1047,7 @@
                     });
             };
 
-            self.close = function() {
+            self.close = function () {
                 self.owner.close();
             };
 
@@ -1063,11 +1069,11 @@
             return self;
         }
 
-        PopupWidgetFactory.getClassName = function() {
+        PopupWidgetFactory.getClassName = function () {
             return className;
         };
 
-        PopupWidgetFactory.create = function(widgetName, options) {
+        PopupWidgetFactory.create = function (widgetName, options) {
             if (!widgetName) {
                 bitlib.logger.error("widget が指定されていません.");
                 return null;
@@ -1088,7 +1094,7 @@
                 template = widgetName + "Template";
 
             $.widget("BitWeb." + widgetName, {
-                _create: function() {
+                _create: function () {
                     if ($[widgetName].initialized === true) {
                         // 生成済み
                         return;
@@ -1116,13 +1122,13 @@
                     this.initPopup();
                     $[widgetName].initialized = true;
                 },
-                _init: function() {
+                _init: function () {
                     // 初期化
                 },
-                _destroy: function() {
+                _destroy: function () {
                     // 破棄... singleton なので特に何もしない
                 },
-                initPopup: function() {
+                initPopup: function () {
                     var $divNode = $("#" + popupId);
 
                     ko.cleanNode($divNode[0]); // knockout 2.3.0 update 対応.[You cannot apply bindings multiple times to the same element]
@@ -1130,14 +1136,14 @@
 
                     popupWidget.popup = $divNode;
                 },
-                open: function() {
+                open: function () {
                     var owner = ko.dataFor(this.element[0]);
                     $[widgetName].open(owner);
                 },
-                ok: function() {
+                ok: function () {
                     $[widgetName].ok();
                 },
-                close: function() {
+                close: function () {
                     $[widgetName].close();
                 },
                 options: options
